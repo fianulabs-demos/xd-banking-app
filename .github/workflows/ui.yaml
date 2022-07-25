@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       #
@@ -40,118 +40,118 @@ jobs:
           export VERSION="$(badger get version)"
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Capture
-        run: |-
-          badger capture build
-
-  testing:
-    runs-on: ubuntu-18.04
-    name: Install, Test, Build, Scan & Publish
-    strategy:
-      matrix:
-        node-version: [ 16.x ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: badger
-        uses: nick-invision/private-action-loader@v3
-        with:
-          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          pal-repo-name: badgercorp/actions
-          version: ${{ env.BADGER_VERSION }}
-          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
-
-      - name: Setup
-        run: |-
-          badger set-version
-          export VERSION="$(badger get version)"
-          echo "VERSION=$VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - run: npm install
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        id: cypress
-        continue-on-error: true
-        timeout-minutes: 10
-        with:
-          working-directory: xd-banking-ui
-          install: false
-          record: true
-          command: npm run test:e2e:ci
-
-      - run: |-
-          badger capture testing --cypress-output-file=cypress/results/mochawesome.json --artifact="$ARTIFACT:$VERSION" --version=$VERSION
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
-      - uses: google-github-actions/get-gke-credentials@v0.2.1
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GKE_SA_KEY }}
-
-      - name: Build UI
-        run: npm run build
-
-      - name: Build UI Image
-        run: |-
-          docker build \
-            --tag "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION" \
-            --build-arg GITHUB_SHA="$GITHUB_SHA" \
-            --build-arg GITHUB_REF="$GITHUB_REF" \
-            .
-
-      - uses: anchore/scan-action/download-grype@v3
-        id: grype
-        with:
-          grype-version: v0.43.0
-
-      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
-
-      - run: |-
-          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: main
-
-      - name: Publish Artifact Image
-        run: |-
-          IMAGE=$ARTIFACT
-
-          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-
-      - name: Capture Sign
-        run: |-
-          badger capture sign --cosign-output-file=sig.json
-
-      - name: Create and Publish Artifact SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-          output-file: sbom.spdx.json
-
-      - run: |-
-          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
+#
+#      - name: Capture
+#        run: |-
+#          badger capture build
+#
+#  testing:
+#    runs-on: ubuntu-18.04
+#    name: Install, Test, Build, Scan & Publish
+#    strategy:
+#      matrix:
+#        node-version: [ 16.x ]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#
+#      - name: badger
+#        uses: nick-invision/private-action-loader@v3
+#        with:
+#          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
+#          pal-repo-name: badgercorp/actions
+#          version: ${{ env.BADGER_VERSION }}
+#          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
+#
+#      - name: Setup
+#        run: |-
+#          badger set-version
+#          export VERSION="$(badger get version)"
+#          echo "VERSION=$VERSION"
+#          echo "VERSION=$VERSION" >> $GITHUB_ENV
+#
+#      - name: Use Node.js ${{ matrix.node-version }}
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: ${{ matrix.node-version }}
+#
+#      - run: npm install
+#
+#      - name: Cypress run
+#        uses: cypress-io/github-action@v4
+#        id: cypress
+#        continue-on-error: true
+#        timeout-minutes: 10
+#        with:
+#          working-directory: xd-banking-ui
+#          install: false
+#          record: true
+#          command: npm run test:e2e:ci
+#
+#      - run: |-
+#          badger capture testing --cypress-output-file=cypress/results/mochawesome.json --artifact="$ARTIFACT:$VERSION" --version=$VERSION
+#
+#      - name: Setup gcloud CLI
+#        uses: google-github-actions/setup-gcloud@v0.2.0
+#        with:
+#          service_account_key: ${{ secrets.GKE_SA_KEY }}
+#          project_id: ${{ secrets.GKE_PROJECT }}
+#
+#      # Configure Docker to use the gcloud command-line tool as a credential
+#      # helper for authentication
+#      - run: |-
+#          gcloud --quiet auth configure-docker
+#
+#      - uses: google-github-actions/get-gke-credentials@v0.2.1
+#        with:
+#          cluster_name: ${{ env.GKE_CLUSTER }}
+#          location: ${{ env.GKE_ZONE }}
+#          credentials: ${{ secrets.GKE_SA_KEY }}
+#
+#      - name: Build UI
+#        run: npm run build
+#
+#      - name: Build UI Image
+#        run: |-
+#          docker build \
+#            --tag "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION" \
+#            --build-arg GITHUB_SHA="$GITHUB_SHA" \
+#            --build-arg GITHUB_REF="$GITHUB_REF" \
+#            .
+#
+#      - uses: anchore/scan-action/download-grype@v3
+#        id: grype
+#        with:
+#          grype-version: v0.43.0
+#
+#      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+#
+#      - run: |-
+#          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
+#
+#      - name: Install Cosign
+#        uses: sigstore/cosign-installer@main
+#        with:
+#          cosign-release: main
+#
+#      - name: Publish Artifact Image
+#        run: |-
+#          IMAGE=$ARTIFACT
+#
+#          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#
+#      - name: Capture Sign
+#        run: |-
+#          badger capture sign --cosign-output-file=sig.json
+#
+#      - name: Create and Publish Artifact SBOM
+#        uses: anchore/sbom-action@v0
+#        with:
+#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+#          output-file: sbom.spdx.json
+#
+#      - run: |-
+#          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
