@@ -70,14 +70,11 @@ jobs:
         run: |
           echo "${{ env.action_state }}" # This will output 'yellow'
 
-      - run: cd ..
-
       - name: SonarQube Scan
         uses: kitabisa/sonarqube-action@v1.2.0
         with:
           host: http://sonarqube.sonarqube.34.132.74.168.sslip.io
           login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
-          projectBaseDir: "xd-banking-app/"
           projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
           projectName: badgercorp   # ${{ env.COMPONENT }}
           projectVersion: ${{ env.VERSION }}
