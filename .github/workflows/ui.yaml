@@ -146,6 +146,7 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          path: ./xd-banking-ui
           output-file: sbom.spdx.json
 
       - run: |-

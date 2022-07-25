@@ -116,7 +116,7 @@ jobs:
         with:
           host: http://sonarqube.sonarqube.34.132.74.168.sslip.io
           login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
-          projectKey: validation-repo-golang                    # ${{ env.ORGANIZATION }}
+          projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
           projectName: badgercorp   # ${{ env.COMPONENT }}
           projectVersion: ${{ env.VERSION }}
 
@@ -213,6 +213,7 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          path: ./xd-banking-api
           output-file: sbom.spdx.json
 
       - run: |-
