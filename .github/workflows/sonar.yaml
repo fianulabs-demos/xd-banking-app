@@ -37,7 +37,7 @@ jobs:
         run: go build -v ./...
 
       - name: Test
-        run: go test -coverprofile=cov.out -v ./... -json > ../report.json
+        run: go test -coverprofile=cov.out -v ./... -json > report.json
 
       - name: badger
         uses: nick-invision/private-action-loader@v3
@@ -53,13 +53,6 @@ jobs:
           export VERSION="$(badger get version)"
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Echo
-        run: |-
-          echo ${{ env.VERSION }}
-          echo "$VERSION"
-          echo "\nsonar.analysis.version=$VERSION\n" >> sonar-project.properties
-          echo "\nsonar.analysis.commit=$GITHUB_SHA\n" >> sonar-project.properties
 
       - name: Set the value
         id: step_one
