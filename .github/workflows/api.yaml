@@ -213,8 +213,7 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-          path: ./xd-banking-api
-          output-file: sbom.spdx.json
+          output-file: xd-banking-api/sbom.spdx.json
 
       - run: |-
           badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
