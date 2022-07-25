@@ -41,186 +41,186 @@ jobs:
           export VERSION="$(badger get version)"
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-#
-#      - name: Capture
-#        run: |-
-#          badger capture build
-#
-#  gobuild:
-#
-#    name: Go Build and Test
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: Set up Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.17
-#
-#      - name: Build
-#        run: go build -v ./...
-#
-#      - name: Test
-#        run: go test -v ./...
-#
-#  sonarqube:
-#
-#    name: Run SonarQube Scan
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#
-#      - name: Set up Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.17
-#
-#      - name: Build
-#        run: go build -v ./...
-#
-#      - name: Test
-#        run: go test -coverprofile=cov.out -v ./... -json > report.json
-#
-#      - name: badger
-#        uses: nick-invision/private-action-loader@v3
-#        with:
-#          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-#          pal-repo-name: badgercorp/actions
-#          version: ${{ env.BADGER_VERSION }}
-#          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
-#
-#      - name: Setup
-#        run: |-
-#          badger set-version
-#          export VERSION="$(badger get version)"
-#          echo "VERSION=$VERSION"
-#          echo "VERSION=$VERSION" >> $GITHUB_ENV
-#
-#      - name: Echo
-#        run: |-
-#          echo ${{ env.VERSION }}
-#          echo "$VERSION"
-#          echo "\nsonar.analysis.version=$VERSION\n" >> sonar-project.properties
-#          echo "\nsonar.analysis.commit=$GITHUB_SHA\n" >> sonar-project.properties
-#
-#      - name: Set the value
-#        id: step_one
-#        run: |
-#          echo "action_state=yellow" >> $GITHUB_ENV
-#      - name: Use the value
-#        id: step_two
-#        run: |
-#          echo "${{ env.action_state }}" # This will output 'yellow'
-#
-#      - name: SonarQube Scan
-#        uses: kitabisa/sonarqube-action@v1.2.0
-#        with:
-#          host: http://sonarqube.sonarqube.34.132.74.168.sslip.io
-#          login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
-#          projectKey: validation-repo-golang                    # ${{ env.ORGANIZATION }}
-#          projectName: badgercorp   # ${{ env.COMPONENT }}
-#          projectVersion: ${{ env.VERSION }}
-#
-#  dockerbuild:
-#
-#    name: Docker Build, Scan, & Publish
-#    runs-on: ubuntu-latest
-#    environment: production
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#
-#      # Setup gcloud CLI
-#      - name: Setup gcloud CLI
-#        uses: google-github-actions/setup-gcloud@v0.2.0
-#        with:
-#          service_account_key: ${{ secrets.GKE_SA_KEY }}
-#          project_id: ${{ secrets.GKE_PROJECT }}
-#
-#      - name: badger
-#        uses: nick-invision/private-action-loader@v3
-#        with:
-#          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-#          pal-repo-name: badgercorp/actions
-#          version: ${{ env.BADGER_VERSION }}
-#          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
-#
-#      # Configure Docker to use the gcloud command-line tool as a credential
-#      # helper for authentication
-#      - run: |-
-#          gcloud --quiet auth configure-docker
-#
-#      # Get the GKE credentials so we can deploy to the cluster
-#      - uses: google-github-actions/get-gke-credentials@v0.2.1
-#        with:
-#          cluster_name: ${{ env.GKE_CLUSTER }}
-#          location: ${{ env.GKE_ZONE }}
-#          credentials: ${{ secrets.GKE_SA_KEY }}
-#
-#      - uses: imjasonh/setup-ko@v0.4
-#
-#      - name: Setup
-#        run: |-
-#          badger set-version
-#          export VERSION="$(badger get version)"
-#          echo "VERSION=$VERSION"
-#          echo "VERSION=$VERSION" >> $GITHUB_ENV
-#
-#      - name: Running Horusec Security
-#        run: |-
-#          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-#          horusec version
-#          horusec start -p="./" -o json -O sast.horusec.report.json
-#
-#      - run: |-
-#          badger capture sast --horusec-output-file=sast.horusec.report.json --version=$VERSION
-#      # Build the Docker image
-#      - name: Build API
-#        run: |-
-#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
-#
-#      - uses: anchore/scan-action/download-grype@v3
-#        id: grype
-#        with:
-#          grype-version: v0.43.0
-#
-#      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
-#
-#      - run: |-
-#          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
-#
-#      - name: Install Cosign
-#        uses: sigstore/cosign-installer@main
-#        with:
-#          cosign-release: main
-#
-#      - name: Publish Artifact Image
-#        run: |-
-#          IMAGE=$ARTIFACT
-#
-#          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#
-#      - name: Capture Sign
-#        run: |-
-#          badger capture sign --cosign-output-file=sig.json
-#
-#      - name: Create and Publish Artifact SBOM
-#        uses: anchore/sbom-action@v0
-#        with:
-#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-#          output-file: sbom.spdx.json
-#
-#      - run: |-
-#          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
+
+      - name: Capture
+        run: |-
+          badger capture build
+
+  gobuild:
+
+    name: Go Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+  sonarqube:
+
+    name: Run SonarQube Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -coverprofile=cov.out -v ./... -json > report.json
+
+      - name: badger
+        uses: nick-invision/private-action-loader@v3
+        with:
+          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          pal-repo-name: badgercorp/actions
+          version: ${{ env.BADGER_VERSION }}
+          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      - name: Setup
+        run: |-
+          badger set-version
+          export VERSION="$(badger get version)"
+          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Echo
+        run: |-
+          echo ${{ env.VERSION }}
+          echo "$VERSION"
+          echo "\nsonar.analysis.version=$VERSION\n" >> sonar-project.properties
+          echo "\nsonar.analysis.commit=$GITHUB_SHA\n" >> sonar-project.properties
+
+      - name: Set the value
+        id: step_one
+        run: |
+          echo "action_state=yellow" >> $GITHUB_ENV
+      - name: Use the value
+        id: step_two
+        run: |
+          echo "${{ env.action_state }}" # This will output 'yellow'
+
+      - name: SonarQube Scan
+        uses: kitabisa/sonarqube-action@v1.2.0
+        with:
+          host: http://sonarqube.sonarqube.34.132.74.168.sslip.io
+          login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
+          projectKey: validation-repo-golang                    # ${{ env.ORGANIZATION }}
+          projectName: badgercorp   # ${{ env.COMPONENT }}
+          projectVersion: ${{ env.VERSION }}
+
+  dockerbuild:
+
+    name: Docker Build, Scan, & Publish
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # Setup gcloud CLI
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+
+      - name: badger
+        uses: nick-invision/private-action-loader@v3
+        with:
+          pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
+          pal-repo-name: badgercorp/actions
+          version: ${{ env.BADGER_VERSION }}
+          authorization: ${{ secrets.GH_ACCESS_TOKEN }}
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@v0.2.1
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SA_KEY }}
+
+      - uses: imjasonh/setup-ko@v0.4
+
+      - name: Setup
+        run: |-
+          badger set-version
+          export VERSION="$(badger get version)"
+          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Running Horusec Security
+        run: |-
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          horusec version
+          horusec start -p="./" -o json -O sast.horusec.report.json
+
+      - run: |-
+          badger capture sast --horusec-output-file=sast.horusec.report.json --version=$VERSION
+      # Build the Docker image
+      - name: Build API
+        run: |-
+          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
+
+      - uses: anchore/scan-action/download-grype@v3
+        id: grype
+        with:
+          grype-version: v0.43.0
+
+      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+
+      - run: |-
+          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: main
+
+      - name: Publish Artifact Image
+        run: |-
+          IMAGE=$ARTIFACT
+
+          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+
+      - name: Capture Sign
+        run: |-
+          badger capture sign --cosign-output-file=sig.json
+
+      - name: Create and Publish Artifact SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          output-file: sbom.spdx.json
+
+      - run: |-
+          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
