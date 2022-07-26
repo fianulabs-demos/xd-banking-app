@@ -25,9 +25,6 @@ sast:
     status: pass
     highSeverity:
       maximum: 0
-      exceptions:
-        - cve: CVE-2016-7654321
-          expires: 2022-09-01
 
 oss:
   licensing:
