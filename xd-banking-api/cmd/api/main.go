@@ -16,6 +16,7 @@ func receive(ctx context.Context, event cloudevents.Event) {
 	result, _ := process(event.Data()) // output of process function
 	log.Printf("output\n%s\\n", result)
 	kotest()
+	test2()
 }
 
 func process(d []byte) ([]byte, error) {
@@ -24,6 +25,44 @@ func process(d []byte) ([]byte, error) {
 
 func kotest() {
 	log.Println("some function")
+}
+
+func test2() {
+	log.Println("noah")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("bing")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("noah")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
 }
 
 func test() {
