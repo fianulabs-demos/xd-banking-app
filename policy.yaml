@@ -1,4 +1,4 @@
-cipipeline:
+badf:
   version:
     pattern: "^([0-9]+)"
   exceptions:
