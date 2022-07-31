@@ -1,6 +1,9 @@
 cipipeline:
   version:
     pattern: "^([0-9]+)"
+  exceptions:
+    - id: CVE-123
+      expiration: 08/12/2022
 
 #policy:
 #  git:
