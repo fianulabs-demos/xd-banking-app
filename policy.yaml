@@ -1,9 +1,9 @@
-cipipeline:
-  version:
-    pattern: "repository"
-  exceptions:
-    - id: CVE-123
-      expiration: 08/12/2022
+#cipipeline:
+#  version:
+#    pattern: "repository"
+#  exceptions:
+#    - id: CVE-123
+#      expiration: 08/12/2022
 
 #sast:
 #  scanOne:
