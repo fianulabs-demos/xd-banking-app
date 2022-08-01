@@ -1,9 +1,16 @@
-badf:
+cipipeline:
   version:
-    pattern: "^([0-9]+)"
+    pattern: "repository"
   exceptions:
     - id: CVE-123
       expiration: 08/12/2022
+
+#sast:
+#  scanOne:
+#    exceptions: ...
+#  scanTwo:
+#    nested:
+#      exceptions:
 
 #policy:
 #  git:
