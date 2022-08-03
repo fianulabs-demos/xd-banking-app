@@ -13,6 +13,7 @@ env:
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GH_CONTEXT: ${{ toJSON(github) }}
+  R_CONTEXT: ${{ toJSON(runner) }}
 
 jobs:
   init:
@@ -59,7 +60,7 @@ jobs:
           
           echo $GH_CONTEXT
           
-          echo ${{ toJSON(runner) }}
+          echo $R_CONTEXT
           
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
