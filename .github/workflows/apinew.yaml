@@ -114,7 +114,8 @@ jobs:
 
       - name: Running Horusec Security
         run: |-
-          badger attestor wrap --step horusec.download --key k8s://default/cosign --output-file result.json -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          badger attestor wrap --step horusec.download --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
           cat result.json
           
