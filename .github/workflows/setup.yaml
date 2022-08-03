@@ -47,17 +47,15 @@ jobs:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_ZONE }}
           credentials: ${{ secrets.GKE_SA_KEY }}
-
-      - name: Deploy Policy
-        run: |-
 #          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
-#          -- badger policy register resource -c repository -p $POLICY_FILE
-#
-#          badger attestor hash --path deploy.policy.json
-#
-#          badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-#            curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-          
+      #          -- badger policy register resource -c repository -p $POLICY_FILE
+      #
+      #          badger attestor hash --path deploy.policy.json
+      #
+      #          badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+      #            curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+      - name: Deploy Policy
+        run: |-     
           badger attestor provenance --payload policy.yaml --github-context ${{ toJSON(github) }} --runner-context ${{ toJSON(runner) }} --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json
           
           cat result.json
