@@ -7,7 +7,7 @@ on:
 
 env:
   POLICY_FILE: policy.yaml
-  BADGER_VERSION: 0.2.3
+  BADGER_VERSION: 0.2.6
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
 
