@@ -14,7 +14,9 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.1.6
+  BADGER_VERSION: 0.2.6
+  BADGER_KEY: k8s://default/cosign
+  REKOR_HOST: ${{ secrets.REKOR_URL }}
 
 defaults:
   run:
@@ -112,50 +114,58 @@ jobs:
 
       - name: Running Horusec Security
         run: |-
-          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step sast.download \
+            -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          
+          SAST_STATEMENTS=$(badger attestor hash --path result.json)
+          
           horusec version
-          horusec start -p="./" -o json -O sast.horusec.report.json
+          
+          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step sast.scan \
+            -- horusec start -p="./" -o json -O sast.horusec.report.json
+          
+          SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
 
       - run: |-
-          badger capture sast --horusec-output-file=sast.horusec.report.json --version=$VERSION
+          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
       # Build the Docker image
-      - name: Build API
-        run: |-
-          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
-
-      - uses: anchore/scan-action/download-grype@v3
-        id: grype
-        with:
-          grype-version: v0.43.0
-
-      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
-
-      - run: |-
-          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: main
-
-      - name: Publish Artifact Image
-        run: |-
-          IMAGE=$ARTIFACT
-
-          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-
-      - name: Capture Sign
-        run: |-
-          badger capture sign --cosign-output-file=sig.json
-
-      - name: Create and Publish Artifact SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-          output-file: xd-banking-api/sbom.spdx.json
-
-      - run: |-
-          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
+#      - name: Build API
+#        run: |-
+#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
+#
+#      - uses: anchore/scan-action/download-grype@v3
+#        id: grype
+#        with:
+#          grype-version: v0.43.0
+#
+#      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+#
+#      - run: |-
+#          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
+#
+#      - name: Install Cosign
+#        uses: sigstore/cosign-installer@main
+#        with:
+#          cosign-release: main
+#
+#      - name: Publish Artifact Image
+#        run: |-
+#          IMAGE=$ARTIFACT
+#
+#          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+#
+#      - name: Capture Sign
+#        run: |-
+#          badger capture sign --cosign-output-file=sig.json
+#
+#      - name: Create and Publish Artifact SBOM
+#        uses: anchore/sbom-action@v0
+#        with:
+#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+#          output-file: xd-banking-api/sbom.spdx.json
+#
+#      - run: |-
+#          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
