@@ -54,7 +54,6 @@ jobs:
           credentials: ${{ secrets.GKE_SA_KEY }}
 
       - name: Deploy Policy
-        test
         run: |-
           badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
           -- badger policy register resource -c repository -p $POLICY_FILE
