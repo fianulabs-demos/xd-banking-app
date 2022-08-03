@@ -25,3 +25,7 @@ badger attestor wrap --key k8s://default/cosign --rekor-url http://rekor.rekor-s
           
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+
+          badger attestor provenance --github-context ${{ toJSON(github) }} --runner-context ${{ toJSON(runner) }} --key $BADGER_KEY --rekor-url $REKOR_HOST --payload policy.yaml --output-file result.json
+
+          cat result.json
