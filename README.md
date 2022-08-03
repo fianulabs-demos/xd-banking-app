@@ -15,3 +15,13 @@ badger attestor wrap --key k8s://default/cosign --rekor-url http://rekor.rekor-s
 ```
 
 badger attestor wrap --key k8s://default/cosign --rekor-url http://rekor.rekor-system.34.132.74.168.sslip.io --output-file result.json --step sast.download -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh
+
+
+
+          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step deploy.policy \
+          -- badger policy register resource -c repository -p $POLICY_FILE
+          
+          badger attestor hash --path result.json
+          
+          badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
