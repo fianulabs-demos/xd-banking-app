@@ -56,6 +56,8 @@ jobs:
           
           badger attestor hash --path deploy.policy.json
           
+          echo toJSON(github)
+          
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
 
