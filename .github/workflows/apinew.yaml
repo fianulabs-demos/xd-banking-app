@@ -178,12 +178,12 @@ jobs:
       - name: Capture Sign
         run: |-
           badger capture sign --statements $PUBLISH_STATEMENTS --cosign-output-file=sig.json
-#
-#      - name: Create and Publish Artifact SBOM
-#        uses: anchore/sbom-action@v0
-#        with:
-#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-#          output-file: xd-banking-api/sbom.spdx.json
-#
-#      - run: |-
-#          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
+
+      - name: Create and Publish Artifact SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          output-file: xd-banking-api/sbom.spdx.json
+
+      - run: |-
+          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
