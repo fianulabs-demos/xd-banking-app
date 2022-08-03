@@ -18,6 +18,9 @@ jobs:
   init:
     runs-on: ubuntu-latest
 
+    env:
+      R_CONTEXT: ${{ toJSON(runner) }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,6 +54,7 @@ jobs:
           credentials: ${{ secrets.GKE_SA_KEY }}
 
       - name: Deploy Policy
+        test
         run: |-
           badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
           -- badger policy register resource -c repository -p $POLICY_FILE
@@ -59,7 +63,7 @@ jobs:
           
           echo $GH_CONTEXT
           
-          echo ${{ runner }}
+          echo $R_CONTEXT
           
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
