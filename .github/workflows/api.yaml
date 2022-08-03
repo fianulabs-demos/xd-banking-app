@@ -14,7 +14,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.2.7
+  BADGER_VERSION: 0.2.8
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
 
@@ -115,7 +115,10 @@ jobs:
       - name: Running Horusec Security
         run: |-
           badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step sast.download \
-            -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+            -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh -o hdown | bash -s latest
+          
+          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step sast.download \
+            -- bash hdown latest
           
           SAST_STATEMENTS=$(badger attestor hash --path result.json)
           
