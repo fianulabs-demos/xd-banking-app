@@ -65,4 +65,8 @@ jobs:
           
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+          
+          badger attestor provenance --key $BADGER_KEY --rekor-url $REKOR_HOST --payload policy.yaml --output-file result.json
+          
+          cat result.json
 
