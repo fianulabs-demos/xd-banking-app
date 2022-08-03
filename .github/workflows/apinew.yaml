@@ -148,26 +148,36 @@ jobs:
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          echo "$COMBINED"
           badger capture scan --statements $COMBINED  --grype-output-file=grype_scan.json --version=$VERSION
-#
-#      - name: Install Cosign
-#        uses: sigstore/cosign-installer@main
-#        with:
-#          cosign-release: main
-#
-#      - name: Publish Artifact Image
-#        run: |-
-#          IMAGE=$ARTIFACT
-#
-#          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#
-#      - name: Capture Sign
-#        run: |-
-#          badger capture sign --cosign-output-file=sig.json
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: main
+
+      - name: Publish Artifact Image
+        run: |-
+          IMAGE=$ARTIFACT
+
+          badger attestor wrap --step docker.push --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          PUBLISH_STATEMENTS=$(badger attestor hash --path result.json)
+          
+          badger attestor wrap --step cosign.sign --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
+          
+          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          
+          badger attestor wrap --step cosign.generate --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
+          
+          echo "PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS" >> $GITHUB_ENV
+
+      - name: Capture Sign
+        run: |-
+          badger capture sign --statements $PUBLISH_STATEMENTS --cosign-output-file=sig.json
 #
 #      - name: Create and Publish Artifact SBOM
 #        uses: anchore/sbom-action@v0
