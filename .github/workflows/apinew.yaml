@@ -123,13 +123,15 @@ jobs:
           
           horusec version
           
-          badger attestor wrap --step horusec.scan --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step horusec.scan --key $BADGER_KEY --output-file result.json -- \
             horusec start -p="./" -o json -O sast.horusec.report.json
           
-          SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
-
+          export SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
+          echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
+          echo "hello"
+          echo SAST_STATEMENTS
+          badger capture sast --statements SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
       # Build the Docker image
 #      - name: Build API
 #        run: |-
