@@ -1,5 +1,5 @@
 # workflow to run anything that needs to run before every other workflow
-name: Pre-Flow Actionss
+name: Pre-Flow Actionsss
 
 on:
   push:
@@ -55,4 +55,6 @@ jobs:
           -- badger policy register resource -c repository -p $POLICY_FILE
           
           badger attestor hash --path deploy.policy.json
+          
+          badger attestor wrap --step debug --key k8s://default/cosign --output-file test.json -- curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
 
