@@ -127,7 +127,6 @@ jobs:
             horusec start -p="./" -o json -O sast.horusec.report.json
           
           export SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
-          echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
           echo "hello"
           echo $SAST_STATEMENTS
