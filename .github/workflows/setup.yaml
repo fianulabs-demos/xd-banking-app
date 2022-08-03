@@ -1,5 +1,5 @@
 # workflow to run anything that needs to run before every other workflow
-name: Pre-Flow Actions
+name: Pre-Flow Actionss
 
 on:
   push:
@@ -8,6 +8,8 @@ on:
 env:
   POLICY_FILE: policy.yaml
   BADGER_VERSION: 0.2.3
+  BADGER_KEY: k8s://default/cosign
+  REKOR_HOST: {{ secrets.REKOR_URL }}
 
 
 jobs:
@@ -30,5 +32,9 @@ jobs:
 
       - name: Deploy Policy
         run: |-
-          badger policy register resource -c repository -p $POLICY_FILE
+          badger attestor wrap \ 
+          --key $BADGER_KEY --rekor-url $REKOR_HOST --step $GITHUB_JOB.deploy.policy --output-file deploy.policy.json \
+          -- badger policy register resource -c repository -p $POLICY_FILE
+          
+          badger attestor hash --path deploy.policy.json
 
