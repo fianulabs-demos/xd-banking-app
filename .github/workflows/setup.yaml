@@ -13,7 +13,6 @@ env:
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GH_CONTEXT: ${{ toJSON(github) }}
-  R_CONTEXT: ${{ toJSON(runner) }}
 
 jobs:
   init:
@@ -52,6 +51,7 @@ jobs:
           credentials: ${{ secrets.GKE_SA_KEY }}
 
       - name: Deploy Policy
+        env:
         run: |-
           badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
           -- badger policy register resource -c repository -p $POLICY_FILE
@@ -60,7 +60,7 @@ jobs:
           
           echo $GH_CONTEXT
           
-          echo $R_CONTEXT
+          echo ${{ runner }}
           
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
