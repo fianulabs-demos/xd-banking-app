@@ -52,5 +52,5 @@ jobs:
         run: |-
           export G_CONTEXT = ${{ toJSON(github) }}
           export R_CONTEXT = ${{ toJSON(runner) }}
-          badger attestor provenance --key k8s://default/cosign  --payload policy.yaml --output-file result.json --github-context ${{ fromJSON($G_CONTEXT) }} --runner-context ${{ fromJSON($R_CONTEXT) }}
+          badger attestor provenance --github-context ${{ toJSON(github) }} --runner-context ${{ toJSON(runner}} --key k8s://default/cosign
 
