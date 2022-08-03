@@ -117,21 +117,19 @@ jobs:
           badger attestor wrap --step horusec.download --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
-          cat result.json
+          SAST_STATEMENTS=$(badger attestor hash --path result.json)
           
           badger attestor hash --path result.json
-      #
-      #          SAST_STATEMENTS=$(badger attestor hash --path result.json)
-      #
-      #          horusec version
-      #
-      #          badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json --step sast.scan \
-      #            -- horusec start -p="./" -o json -O sast.horusec.report.json
-      #
-      #          SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
-      #
-      #      - run: |-
-      #          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
+          
+          horusec version
+          
+          badger attestor wrap --step horusec.scan --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            horusec start -p="./" -o json -O sast.horusec.report.json
+          
+          SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
+
+      - run: |-
+          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
       # Build the Docker image
 #      - name: Build API
 #        run: |-
