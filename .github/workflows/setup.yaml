@@ -50,7 +50,7 @@ jobs:
 
       - name: Deploy Policy
         run: |-
-          badger attestor provenance --key k8s://default/cosign  --payload policy.yaml --output-file result.json \
-            --github-context ${{ toJSON(github) }} \
-            --runner-context ${{ toJSON(runner) }}
+          export G_CONTEXT = ${{ toJSON(github) }}
+          export R_CONTEXT = ${{ toJSON(runner) }}
+          badger attestor provenance --key k8s://default/cosign  --payload policy.yaml --output-file result.json --github-context ${{ fromJSON($G_CONTEXT) }} --runner-context ${{ fromJSON($R_CONTEXT) }}
 
