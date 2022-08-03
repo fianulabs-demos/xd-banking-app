@@ -9,8 +9,7 @@ env:
   POLICY_FILE: policy.yaml
   BADGER_VERSION: 0.2.3
   BADGER_KEY: k8s://default/cosign
-  REKOR_HOST: {{ secrets.REKOR_URL }}
-
+  REKOR_HOST: ${{ secrets.REKOR_URL }}
 
 jobs:
   init:
