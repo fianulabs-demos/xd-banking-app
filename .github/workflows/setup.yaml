@@ -11,8 +11,6 @@ env:
   GKE_CLUSTER: badgercorp  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   BADGER_KEY: k8s://default/cosign
-  REKOR_HOST: ${{ secrets.REKOR_URL }}
-  GH_CONTEXT: ${{ toJSON(github) }}
 
 jobs:
   init:
@@ -51,8 +49,6 @@ jobs:
           credentials: ${{ secrets.GKE_SA_KEY }}
 
       - name: Deploy Policy
-        env:
-          R_CONTEXT: ${{ toJSON(runner) }}
         run: |-
           badger attestor wrap --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
           -- badger policy register resource -c repository -p $POLICY_FILE
@@ -62,7 +58,7 @@ jobs:
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
-          badger attestor provenance --github-context ${{ toJSON(github) }} --runner-context ${{ toJSON(runner) }} --key $BADGER_KEY --rekor-url $REKOR_HOST --payload policy.yaml --output-file result.json
+          badger attestor provenance --payload policy.yaml --github-context ${{ toJSON(github) }} --runner-context ${{ toJSON(runner) }} --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json
           
           cat result.json
 
