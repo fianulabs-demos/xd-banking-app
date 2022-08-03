@@ -59,6 +59,8 @@ jobs:
           
           echo $GH_CONTEXT
           
+          echo ${{ toJSON(runner) }}
+          
           badger attestor wrap --step debug --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
 
