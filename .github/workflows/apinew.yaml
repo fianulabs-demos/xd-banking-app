@@ -3,7 +3,7 @@ name: CI Pipeline Build API
 on:
   workflow_run:
     workflows:
-      - Pre-Flow Actionss
+      - Pre-Flow Actions
     branches: [main]
     types:
       - completed
