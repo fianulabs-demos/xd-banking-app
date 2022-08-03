@@ -130,8 +130,8 @@ jobs:
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
           echo "hello"
-          echo SAST_STATEMENTS
-          badger capture sast --statements SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
+          echo $SAST_STATEMENTS
+          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
       # Build the Docker image
 #      - name: Build API
 #        run: |-
