@@ -32,7 +32,7 @@ jobs:
       - name: Deploy Policy
         run: |-
           badger attestor wrap \ 
-          --key $BADGER_KEY --rekor-url $REKOR_HOST --step $GITHUB_JOB.deploy.policy --output-file deploy.policy.json \
+          --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file deploy.policy.json --step deploy.policy \
           -- badger policy register resource -c repository -p $POLICY_FILE
           
           badger attestor hash --path deploy.policy.json
