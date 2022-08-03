@@ -1,5 +1,5 @@
 # workflow to run anything that needs to run before every other workflow
-name: Pre-Flow Actionsss
+name: Pre-Flow Actionss
 
 on:
   push:
@@ -10,7 +10,6 @@ env:
   BADGER_VERSION: 0.2.10
   GKE_CLUSTER: badgercorp  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
-  BADGER_KEY: k8s://default/cosign
 
 jobs:
   init:
@@ -22,17 +21,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
       - name: badger
         uses: nick-invision/private-action-loader@v3
         with:
@@ -41,16 +29,7 @@ jobs:
           version: ${{ env.BADGER_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
-      # Get the GKE credentials so we can deploy to the cluster
-      - uses: google-github-actions/get-gke-credentials@v0.2.1
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GKE_SA_KEY }}
-
       - name: Deploy Policy
         run: |-
-          badger attestor provenance --github-context ${{ github }} --runner-context ${{ runner }} \
-            --key k8s://default/cosign \
-            --payload policy.yaml
+          badger policy register resource -c repository -p $POLICY_FILE
 
