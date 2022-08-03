@@ -118,33 +118,38 @@ jobs:
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
           SAST_STATEMENTS=$(badger attestor hash --path result.json)
-          
-          badger attestor hash --path result.json
-          
-          horusec version
-          
+                              
           badger attestor wrap --step horusec.scan --key $BADGER_KEY --output-file result.json -- \
             horusec start -p="./" -o json -O sast.horusec.report.json
           
-          export SAST_STATEMENTS=$SAST_STATEMENTS,$(badger attestor hash --path result.json)
+          echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          echo "hello"
-          echo $SAST_STATEMENTS
           badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
-      # Build the Docker image
-#      - name: Build API
-#        run: |-
-#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
-#
-#      - uses: anchore/scan-action/download-grype@v3
-#        id: grype
-#        with:
-#          grype-version: v0.43.0
-#
-#      - run: ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
-#
-#      - run: |-
-#          badger capture scan --grype-output-file=grype_scan.json --version=$VERSION
+       # Build the Docker image
+      - name: Build API
+        run: |-
+          badger attestor wrap --step ko.build --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
+          
+          ARTIFACT_STATEMENTS=$(badger attestor hash --path result.json)
+          echo "ARTIFACT_STATEMENTS=$ARTIFACT_STATEMENTS" >> $GITHUB_ENV
+
+      - uses: anchore/scan-action/download-grype@v3
+        id: grype
+        with:
+          grype-version: v0.43.0
+
+      - run: |-
+          badger attestor wrap --step grype.scan --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+            ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+          
+          GRYPE_STATEMENTS=$(badger attestor hash --path result.json)
+          echo "GRYPE_STATEMENTS=$GRYPE_STATEMENTS" >> $GITHUB_ENV
+
+      - run: |-
+          COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
+          echo "$COMBINED"
+          badger capture scan --statements $COMBINED  --grype-output-file=grype_scan.json --version=$VERSION
 #
 #      - name: Install Cosign
 #        uses: sigstore/cosign-installer@main
