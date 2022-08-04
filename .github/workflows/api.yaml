@@ -177,7 +177,8 @@ jobs:
 
       - name: Capture Sign
         run: |-
-          badger capture sign --statements $PUBLISH_STATEMENTS --cosign-output-file=sig.json
+          COMBINED="$ARTIFACT_STATEMENTS,$PUBLISH_STATEMENTS"
+          badger capture sign --statements $COMBINED --cosign-output-file=sig.json
 
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0

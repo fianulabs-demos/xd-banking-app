@@ -2,68 +2,11 @@ cipipeline:
   version:
     pattern: "^([0-9]+)"
 
-#sast:
-#  scanOne:
-#    exceptions: ...
-#  scanTwo:
-#    nested:
-#      exceptions:
+containerscan:
+  grype:
+    vulnerabilities:
+      high:
+        maximum: 0
+      critical:
+        maximum: 0
 
-#policy:
-#  git:
-#    code_review:
-#      pull_request:
-#        min: 1
-#      approvers:
-#        min: 1
-#
-#sbom:
-#  syft:
-#    files:
-#      minimum: 1
-#
-#cosign:
-#  artifact:
-#    signed: true
-#
-#sast:
-#  horusec:
-#    status: pass
-#    highSeverity:
-#      maximum: 0
-#
-#oss:
-#  licensing:
-#    whitelist:
-#      - MIT
-#      - None
-#
-#codescan:
-#  coverage:
-#    new_coverage:
-#      minimum: 0.8
-#    overall_coverage:
-#      minimum: 0.8
-#
-#  mainainability:
-#    rating:
-#      minimum: A
-#    code_smells:
-#      maximum: 0
-#
-#  reliability:
-#    rating:
-#      minimum: A
-#    bugs:
-#      maximum: 0
-#
-#  security:
-#    rating:
-#      minimum: A
-#    vulnerabilities:
-#      maximum: 0
-#
-#containerscan:
-#  grype:
-#    runs:
-#      minimum: 1
