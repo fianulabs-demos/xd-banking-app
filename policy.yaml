@@ -7,6 +7,13 @@ containerscan:
     vulnerabilities:
       critical:
         maximum: 0
+    exceptions:
+    - id: CVE-2021-36159
+      expiration: 08/12/2022
+    - id: CVE-2021-3711
+      expiration: 08/12/2022
+    - id: CVE-2022-28391
+      expiration: 08/12/2022
 
 codescan:
   coverage:
