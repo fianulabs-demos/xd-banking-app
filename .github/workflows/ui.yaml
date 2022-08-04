@@ -14,7 +14,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-ui
-  BADGER_VERSION: 0.2.10
+  BADGER_VERSION: 0.2.11
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
 
@@ -120,9 +120,7 @@ jobs:
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" \
             .
-          
-          cat result.json
-          
+                    
           ARTIFACT_STATEMENTS=$(badger attestor hash --path result.json)
           echo "ARTIFACT_STATEMENTS=$ARTIFACT_STATEMENTS" >> $GITHUB_ENV
 
