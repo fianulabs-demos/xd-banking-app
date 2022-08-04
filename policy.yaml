@@ -7,3 +7,28 @@ containerscan:
     vulnerabilities:
       critical:
         maximum: 0
+
+codescan:
+  coverage:
+    new_coverage:
+      minimum: 0.8
+    overall_coverage:
+      minimum: 0.8
+
+  maintainability:
+    rating:
+      minimum: A
+    code_smells:
+      maximum: 0
+
+  reliability:
+    rating:
+      minimum: A
+    bugs:
+      maximum: 0
+
+  security:
+    rating:
+      minimum: A
+    vulnerabilities:
+      maximum: 0
