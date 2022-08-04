@@ -121,6 +121,8 @@ jobs:
             --build-arg GITHUB_REF="$GITHUB_REF" \
             .
           
+          cat results.json
+          
           ARTIFACT_STATEMENTS=$(badger attestor hash --path result.json)
           echo "ARTIFACT_STATEMENTS=$ARTIFACT_STATEMENTS" >> $GITHUB_ENV
 
