@@ -51,6 +51,14 @@ jobs:
     strategy:
       matrix:
         node-version: [ 16.x ]
+
+    permissions:
+      id-token: write # Needed for keyless.
+      contents: read
+      # actions permissions are needed to read info on the workflow and
+      # workflow run.
+      actions: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
