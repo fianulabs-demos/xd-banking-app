@@ -132,7 +132,7 @@ jobs:
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture data --statements $COMBINED --key --type sast $FIANU_KEY --host $REKOR_HOST --attest  --input sast.horusec.report.json --version=$VERSION
+          badger capture data --statements $COMBINED --key --type horusec $FIANU_KEY --host $REKOR_HOST --attest  --input sast.horusec.report.json --version=$VERSION
        # Build the Docker image
       - name: Build API
         run: |-
