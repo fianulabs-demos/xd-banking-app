@@ -12,6 +12,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
+  GITHUB_CONTEXT: ${{ toJSON(github) }}
 
 jobs:
   init:
