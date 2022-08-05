@@ -20,8 +20,6 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write # Needed for keyless.
-      contents: read
       # actions permissions are needed to read info on the workflow and
       # workflow run.
       actions: read
