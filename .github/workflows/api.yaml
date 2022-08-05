@@ -157,6 +157,7 @@ jobs:
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
+          cat grype_scan.json
           badger capture data \
             --statements $COMBINED --key $FIANU_KEY --type containerscan --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
 
