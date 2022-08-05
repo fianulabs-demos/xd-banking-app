@@ -15,8 +15,9 @@ env:
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-ui
   BADGER_VERSION: 0.2.16
-  BADGER_KEY: k8s://default/cosign
+  FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
+  GITHUB_CONTEXT: ${{ toJSON(github) }}
 
 defaults:
   run:
@@ -114,7 +115,7 @@ jobs:
 
       - name: Build UI Image
         run: |-
-          badger attestor wrap --step docker.build --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step docker.build --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker build \
             --tag "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
@@ -130,7 +131,7 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          badger attestor wrap --step grype.scan --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step grype.scan --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
           
           GRYPE_STATEMENTS=$(badger attestor hash --path result.json)
@@ -150,17 +151,17 @@ jobs:
         run: |-
           IMAGE=$ARTIFACT
 
-          badger attestor wrap --step docker.push --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step docker.push --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$(badger attestor hash --path result.json)
           
-          badger attestor wrap --step cosign.sign --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step cosign.sign --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
           
           cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           
-          badger attestor wrap --step cosign.generate --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step cosign.generate --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
           
