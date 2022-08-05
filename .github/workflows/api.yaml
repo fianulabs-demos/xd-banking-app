@@ -3,7 +3,7 @@ name: CI Pipeline Build API
 on:
   workflow_run:
     workflows:
-      - Pre-Flow Actions
+      - Pre-Flow Actionss
     branches: [main]
     types:
       - completed
@@ -132,7 +132,7 @@ jobs:
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture data --statements $COMBINED --key --type horusec $FIANU_KEY --rekor-host $REKOR_HOST --attest  --input sast.horusec.report.json --version=$VERSION
+          badger capture data --statements $COMBINED --key $FIANU_KEY --type horusec --rekor-url $REKOR_HOST --attest  --input sast.horusec.report.json --version=$VERSION
        # Build the Docker image
       - name: Build API
         run: |-
@@ -156,7 +156,7 @@ jobs:
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          badger capture data --statements $COMBINED --key --type grype $FIANU_KEY --host $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
+          badger capture data --statements $COMBINED --key $FIANU_KEY --type grype --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
