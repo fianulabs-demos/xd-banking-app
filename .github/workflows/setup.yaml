@@ -13,6 +13,9 @@ env:
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
+  ACTIONS_ID_TOKEN_REQUEST_URL: https://api.github.com
+  ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
 
 jobs:
   init:
