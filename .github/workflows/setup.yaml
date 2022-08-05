@@ -7,7 +7,7 @@ on:
 
 env:
   POLICY_FILE: policy.yaml
-  BADGER_VERSION: 0.2.14
+  BADGER_VERSION: 0.2.15
   GKE_CLUSTER: badgercorp  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   FIANU_KEY: k8s://default/cosign
@@ -16,24 +16,9 @@ env:
 
 
 jobs:
-  # detect-env detects the reusable workflow's repository and ref for use later
-  # in the workflow.
-  detect-env:
-    outputs:
-      repository: ${{ steps.detect.outputs.repository }}
-      ref: ${{ steps.detect.outputs.ref }}
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write # Needed to detect the current reusable repository and ref.
-    steps:
-      - name: Detect the generator ref
-        id: detect
-        uses: slsa-framework/slsa-github-generator/.github/actions/detect-workflow@e178bc7b362c7cb93899a9721da7a0d7d1286869
-
   init:
     runs-on: ubuntu-latest
 
-    needs: [ detect-env ]
     permissions:
       id-token: write # Needed for keyless.
       contents: read
@@ -77,8 +62,6 @@ jobs:
       - name: Deploy Policy
         run: |-
           badger policy register resource -c repository -p $POLICY_FILE
-          
-          badger capture data --input $POLICY_FILE --type build
-          
+                    
           badger capture data --input $POLICY_FILE --type build --attest --key $FIANU_KEY --rekor-url $REKOR_HOST
 
