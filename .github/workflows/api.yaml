@@ -132,7 +132,8 @@ jobs:
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture data --statements $COMBINED --key $FIANU_KEY --type horusec --rekor-url $REKOR_HOST --attest  --input sast.horusec.report.json --version=$VERSION
+          badger capture data \
+            --statements $SAST_STATEMENTS --type sast --input sast.horusec.report.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
        # Build the Docker image
       - name: Build API
         run: |-
@@ -156,7 +157,8 @@ jobs:
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          badger capture data --statements $COMBINED --key $FIANU_KEY --type grype --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
+          badger capture data \
+            --statements $COMBINED --key $FIANU_KEY --type grype --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
