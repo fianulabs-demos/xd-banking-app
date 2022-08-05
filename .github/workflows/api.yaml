@@ -14,9 +14,10 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.2.12
-  BADGER_KEY: k8s://default/cosign
+  BADGER_VERSION: 0.2.15
+  FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
+  GITHUB_CONTEXT: ${{ toJSON(github) }}
 
 defaults:
   run:
@@ -70,6 +71,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    permissions:
+      id-token: write # Needed for keyless.
+      contents: read
+      # actions permissions are needed to read info on the workflow and
+      # workflow run.
+      actions: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -114,21 +122,22 @@ jobs:
 
       - name: Running Horusec Security
         run: |-
-          badger attestor wrap --step horusec.download --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step horusec.download --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
           SAST_STATEMENTS=$(badger attestor hash --path result.json)
                               
-          badger attestor wrap --step horusec.scan --key $BADGER_KEY --output-file result.json -- \
+          badger attestor wrap --step horusec.scan --key $FIANU_KEY --output-file result.json -- \
             horusec start -p="./" -o json -O sast.horusec.report.json
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
+          badger capture sast \
+            --statements $SAST_STATEMENTS --input sast.horusec.report.json --version=$VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
        # Build the Docker image
       - name: Build API
         run: |-
-          badger attestor wrap --step ko.build --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step ko.build --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
           
           ARTIFACT_STATEMENTS=$(badger attestor hash --path result.json)
@@ -140,7 +149,7 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          badger attestor wrap --step grype.scan --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step grype.scan --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
           
           GRYPE_STATEMENTS=$(badger attestor hash --path result.json)
@@ -159,17 +168,17 @@ jobs:
         run: |-
           IMAGE=$ARTIFACT
 
-          badger attestor wrap --step docker.push --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step docker.push --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$(badger attestor hash --path result.json)
           
-          badger attestor wrap --step cosign.sign --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step cosign.sign --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
           
           cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           
-          badger attestor wrap --step cosign.generate --key $BADGER_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          badger attestor wrap --step cosign.generate --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
           
