@@ -1,5 +1,5 @@
 # workflow to run anything that needs to run before every other workflow
-name: Pre-Flow Actionss
+name: Pre-Flow Actions
 
 on:
   push:
