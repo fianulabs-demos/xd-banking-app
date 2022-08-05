@@ -13,11 +13,23 @@ env:
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
-  ACTIONS_ID_TOKEN_REQUEST_URL: https://api.github.com
-  ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
 jobs:
+  # detect-env detects the reusable workflow's repository and ref for use later
+  # in the workflow.
+  detect-env:
+    outputs:
+      repository: ${{ steps.detect.outputs.repository }}
+      ref: ${{ steps.detect.outputs.ref }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Needed to detect the current reusable repository and ref.
+    steps:
+      - name: Detect the generator ref
+        id: detect
+        uses: slsa-framework/slsa-github-generator/.github/actions/detect-workflow@e178bc7b362c7cb93899a9721da7a0d7d1286869
+
   init:
     runs-on: ubuntu-latest
 
