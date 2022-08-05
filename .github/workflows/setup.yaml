@@ -62,6 +62,3 @@ jobs:
       - name: Deploy Policy
         run: |-
           badger policy register resource -c repository -p $POLICY_FILE
-                    
-          badger capture data --input $POLICY_FILE --type build --attest --key $FIANU_KEY --rekor-url $REKOR_HOST
-

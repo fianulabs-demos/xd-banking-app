@@ -3,7 +3,7 @@ name: CI Pipeline Build API
 on:
   workflow_run:
     workflows:
-      - Pre-Flow Actionsss
+      - Pre-Flow Actions
     branches: [main]
     types:
       - completed
@@ -132,8 +132,7 @@ jobs:
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture data \
-            --statements $SAST_STATEMENTS --type sast --input sast.horusec.report.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
+          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file sast.horusec.report.json --version $VERSION
        # Build the Docker image
       - name: Build API
         run: |-
