@@ -14,7 +14,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-ui
-  BADGER_VERSION: 0.2.12
+  BADGER_VERSION: 0.2.16
   BADGER_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
 
@@ -138,7 +138,8 @@ jobs:
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          badger capture scan --statements $COMBINED --grype-output-file=grype_scan.json --version=$VERSION
+          badger capture data \
+            --statements $COMBINED --key $FIANU_KEY --type containerscan --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
