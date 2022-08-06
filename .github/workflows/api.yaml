@@ -14,7 +14,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.2.20
+  BADGER_VERSION: 0.2.21
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
@@ -27,6 +27,13 @@ jobs:
 
   init:
     runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # Needed for keyless.
+      contents: read
+      # actions permissions are needed to read info on the workflow and
+      # workflow run.
+      actions: read
 
     steps:
       - name: Checkout
@@ -44,7 +51,9 @@ jobs:
 
       - name: Capture
         run: |-
-          badger capture build
+          badger take snapshot -o snapshot.json
+          badger capture data \
+            --type build --input snapshot.json --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
 
   gobuild:
 
