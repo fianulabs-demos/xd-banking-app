@@ -198,4 +198,5 @@ jobs:
           output-file: xd-banking-api/sbom.spdx.json
 
       - run: |-
-          badger capture sbom --syft-output-file=sbom.spdx.json --version=$VERSION
+          badger capture data \
+            --type sbom --input sbom.spdx.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
