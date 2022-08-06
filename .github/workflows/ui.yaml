@@ -74,6 +74,23 @@ jobs:
           version: ${{ env.BADGER_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker
+
+      - uses: google-github-actions/get-gke-credentials@v0.2.1
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          credentials: ${{ secrets.GKE_SA_KEY }}
+
       - name: Setup
         run: |-
           badger set-version
@@ -100,24 +117,8 @@ jobs:
           command: npm run test:e2e:ci
 
       - run: |-
-          badger capture testing --cypress-output-file=cypress/results/mochawesome.json --artifact="$ARTIFACT:$VERSION" --version=$VERSION
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
-      - uses: google-github-actions/get-gke-credentials@v0.2.1
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GKE_SA_KEY }}
+          badger capture data \
+            --type testing --input cypress/results/mochawesome.json --artifact "$ARTIFACT:$VERSION" --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
 
       - name: Build UI
         run: npm run build
