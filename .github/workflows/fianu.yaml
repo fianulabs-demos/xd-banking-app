@@ -1,0 +1,27 @@
+name: Validate Fianu Policy
+
+on:  
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, edited]
+      
+defaults:
+  run:
+    working-directory: ./xd-banking-ui
+
+jobs:
+  init:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Capture
+        run: |-
+          echo $GITHUB_SHA
+          echo $GITHUB_REF
