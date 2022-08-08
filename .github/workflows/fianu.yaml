@@ -2,10 +2,14 @@ name: Validate Fianu Policy
 
 on:  
   push:
-    branches:
-      - master
+    branches: [main, master]
+      
   pull_request:
     types: [opened, edited]
+    
+  pull_request_target:
+    types: [opened]
+    branches: [main, master]
       
 defaults:
   run:
