@@ -32,3 +32,4 @@ codescan:
       minimum: A
     vulnerabilities:
       maximum: 0
+
