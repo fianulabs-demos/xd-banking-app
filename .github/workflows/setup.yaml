@@ -1,5 +1,5 @@
 # workflow to run anything that needs to run before every other workflow
-name: Pre-Flow Actions
+name: Pre-Flow Actionss
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 env:
   POLICY_FILE: policy.yaml
-  BADGER_VERSION: 0.2.21
+  BADGER_VERSION: 0.3.0
   GKE_CLUSTER: badgercorp  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   FIANU_KEY: k8s://default/cosign
