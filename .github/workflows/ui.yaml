@@ -155,7 +155,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: main
+          cosign-release: 'v1.10.1'
 
       - name: Publish Artifact Image
         run: |-
