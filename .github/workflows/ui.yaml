@@ -157,7 +157,7 @@ jobs:
         with:
           cosign-release: 'v1.10.1'
 
-      - name: Publish Artifact Image
+      - name: Publish Artifactn Image
         run: |-
           IMAGE=$ARTIFACT
 
