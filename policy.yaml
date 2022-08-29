@@ -19,7 +19,7 @@ codescan:
     rating:
       minimum: A
     code_smells:
-      maximum: 5
+      maximum: 10
 
   reliability:
     rating:
