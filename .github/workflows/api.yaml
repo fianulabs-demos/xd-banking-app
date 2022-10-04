@@ -112,7 +112,9 @@ jobs:
           location: ${{ env.GKE_ZONE }}
           credentials: ${{ secrets.GKE_SA_KEY }}
 
-      - uses: imjasonh/setup-ko@v0.4
+      - uses: imjasonh/setup-ko@v0.6
+        with:
+          version: v0.12.0
 
       - name: Setup
         run: |-
