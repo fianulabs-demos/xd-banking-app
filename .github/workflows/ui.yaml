@@ -1,12 +1,8 @@
 name: CI Pipeline Build UI
 
 on:
-  workflow_run:
-    workflows:
-      - Pre-Flow Actions
-    branches: [main]
-    types:
-      - completed
+  push:
+    branches: [ main ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
