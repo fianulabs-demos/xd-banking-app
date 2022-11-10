@@ -35,7 +35,7 @@ jobs:
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
           pal-repo-name: badgercorp/actions
-          version: ${{ env.BADGER_VERSION }}
+          version: ${{ env.FIANU_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
       - name: Capture
