@@ -10,7 +10,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.3.10
+  FIANU_VERSION: 0.3.11
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: badger
+      - name: fianu
         uses: nick-invision/private-action-loader@v3
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -40,8 +40,8 @@ jobs:
 
       - name: Capture
         run: |-
-          badger take snapshot -o snapshot.json
-          badger capture data --type build --input snapshot.json
+          fianu take snapshot -o snapshot.json
+          fianu capture data --type build --input snapshot.json
 
   gobuild:
 
@@ -88,12 +88,12 @@ jobs:
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           project_id: ${{ secrets.GKE_PROJECT }}
 
-      - name: badger
+      - name: fianu
         uses: nick-invision/private-action-loader@v3
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          pal-repo-name: badgercorp/actions
-          version: ${{ env.BADGER_VERSION }}
+          pal-repo-name: fianulabs/actions
+          version: ${{ env.FIANU_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
       # Configure Docker to use the gcloud command-line tool as a credential
@@ -114,32 +114,32 @@ jobs:
 
       - name: Setup
         run: |-
-          badger set-version
-          export VERSION="$(badger get version)"
+          fianu set-version
+          export VERSION="$(fianu get version)"
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Running Horusec Security
         run: |-
-          badger attestor wrap --step horusec.download --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step horusec.download --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
           
-          SAST_STATEMENTS=$(badger attestor hash --path result.json)
+          SAST_STATEMENTS=$(fianu attestor hash --path result.json)
                               
-          badger attestor wrap --step horusec.scan --key $FIANU_KEY --output-file result.json -- \
+          fianu attestor wrap --step horusec.scan --key $FIANU_KEY --output-file result.json -- \
             horusec start -p="./" -o json -O sast.horusec.report.json
           
           echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
       - run: |-
-          badger capture data \
+          fianu capture data \
             --statements $SAST_STATEMENTS --type sast --input sast.horusec.report.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
        # Build the Docker image
       - name: Build API
         run: |-
-          badger attestor wrap --step ko.build --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step ko.build --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
           
-          ARTIFACT_STATEMENTS=$(badger attestor hash --path result.json)
+          ARTIFACT_STATEMENTS=$(fianu attestor hash --path result.json)
           echo "ARTIFACT_STATEMENTS=$ARTIFACT_STATEMENTS" >> $GITHUB_ENV
 
       - uses: anchore/scan-action/download-grype@v3
@@ -148,15 +148,15 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          badger attestor wrap --step grype.scan --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step grype.scan --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
           
-          GRYPE_STATEMENTS=$(badger attestor hash --path result.json)
+          GRYPE_STATEMENTS=$(fianu attestor hash --path result.json)
           echo "GRYPE_STATEMENTS=$GRYPE_STATEMENTS" >> $GITHUB_ENV
 
       - run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          badger capture data \
+          fianu capture data \
             --statements $COMBINED --key $FIANU_KEY --type containerscan --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
 
       - name: Install Cosign
@@ -168,26 +168,26 @@ jobs:
         run: |-
           IMAGE=$ARTIFACT
 
-          badger attestor wrap --step docker.push --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step docker.push --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$(badger attestor hash --path result.json)
+          PUBLISH_STATEMENTS=$(fianu attestor hash --path result.json)
           
-          badger attestor wrap --step cosign.sign --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step cosign.sign --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
+          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(fianu attestor hash --path result.json)
           
           cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           
-          badger attestor wrap --step cosign.generate --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
+          fianu attestor wrap --step cosign.generate --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(badger attestor hash --path result.json)
+          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(fianu attestor hash --path result.json)
           
           echo "PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS" >> $GITHUB_ENV
 
       - name: Capture Sign
         run: |-
           COMBINED="$ARTIFACT_STATEMENTS,$PUBLISH_STATEMENTS"
-          badger capture data \
+          fianu capture data \
             --type cosign --statements $COMBINED --input sig.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
 
       - name: Create and Publish Artifact SBOM
@@ -197,5 +197,5 @@ jobs:
           output-file: xd-banking-api/sbom.spdx.json
 
       - run: |-
-          badger capture data \
+          fianu capture data \
             --type sbom --input sbom.spdx.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
