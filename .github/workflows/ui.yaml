@@ -6,11 +6,11 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: badgercorp  # TODO: update to cluster name
+  GKE_CLUSTER: fianu-prod  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-ui
-  FIANU_VERSION: 0.3.13
+  FIANU_VERSION: 0.3.12
   FIANU_KEY: k8s://default/cosign
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
