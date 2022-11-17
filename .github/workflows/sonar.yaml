@@ -66,8 +66,9 @@ jobs:
       - name: SonarQube Scan
         uses: kitabisa/sonarqube-action@v1.2.0
         with:
-          host: http://sonarqube.sonarqube.35.238.15.35.sslip.io
-          login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
+          host: http://sonarqube.sonarqube.35.232.161.16.sslip.io
+          login: user
+          password: exNkFxLqEk
           projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
           projectName: fianulabs   # ${{ env.COMPONENT }}
           projectVersion: ${{ env.VERSION }}
