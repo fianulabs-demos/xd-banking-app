@@ -10,11 +10,11 @@ defaults:
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: badgercorp  # TODO: update to cluster name
+  GKE_CLUSTER: fianu-prod  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.3.5
+  BADGER_VERSION: 0.3.12
 
 jobs:
   sonarqube:
@@ -69,5 +69,5 @@ jobs:
           host: http://sonarqube.sonarqube.35.238.15.35.sslip.io
           login: 11be8002a77e1ed89637f117cb713cc72bbc9ce1
           projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
-          projectName: badgercorp   # ${{ env.COMPONENT }}
+          projectName: fianulabs   # ${{ env.COMPONENT }}
           projectVersion: ${{ env.VERSION }}
