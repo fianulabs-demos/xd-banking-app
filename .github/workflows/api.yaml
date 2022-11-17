@@ -126,6 +126,8 @@ jobs:
           fianu attestor wrap --step horusec.download --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
             curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
             
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+            
           cat result.json
           
           SAST_STATEMENTS=$(fianu attestor hash --path result.json)
