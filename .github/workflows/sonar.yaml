@@ -49,7 +49,7 @@ jobs:
 
       - name: Setup
         run: |-
-          badger set-version
+          fianu set-version
           export VERSION="$(badger get version)"
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
