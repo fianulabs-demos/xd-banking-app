@@ -148,13 +148,13 @@ jobs:
           cosign-release: 'v1.11.0'
 
       - name: Publish Artifact Image
-        run: |-
-          docker push "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"
+        run: |-          
+          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
           
-          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"          
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"
+          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"          
+          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
           
-          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION" 
+          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION" 
           
           fianu capture artifact --input cosign.json --type cosign
 

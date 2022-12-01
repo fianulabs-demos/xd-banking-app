@@ -118,8 +118,7 @@ jobs:
 
       - name: Build UI Image
         run: |-
-          docker build \
-            --tag "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_VERSION" \
+          docker build --tag "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_VERSION" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" \
 
