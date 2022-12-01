@@ -1,0 +1,76 @@
+{
+  "version": "v2.8.0",
+  "id": "db05e3df-fc66-42d1-9aef-16bb1fa6f3e0",
+  "repositoryID": "00000000-0000-0000-0000-000000000000",
+  "repositoryName": "",
+  "workspaceID": "00000000-0000-0000-0000-000000000000",
+  "workspaceName": "",
+  "status": "error",
+  "errors": "{HORUSEC_CLI} Error while running tool Semgrep: error during connect: Post \"http://%2Fvar%2Frun%2Fdocker.sock/v1.41/containers/13c695ce5854be6016be430311fce8d614a6293377b0402ec70fe10050b93228/start\": EOF;{HORUSEC_CLI} Error while running tool Trivy: trivy filesystem cmd: error during connect: Post \"http://%2Fvar%2Frun%2Fdocker.sock/v1.41/containers/7060894f1144f1264198ebe84253b33ee67d59f90a779caf8783fececd1a167d/start\": EOF; unexpected EOF; unexpected EOF",
+  "createdAt": "2022-08-03T18:00:10.032097-05:00",
+  "finishedAt": "2022-08-03T18:00:44.285855-05:00",
+  "analysisVulnerabilities": [
+    {
+      "vulnerabilityID": "00000000-0000-0000-0000-000000000000",
+      "analysisID": "db05e3df-fc66-42d1-9aef-16bb1fa6f3e0",
+      "createdAt": "2022-08-03T18:00:44.28607-05:00",
+      "vulnerabilities": {
+        "vulnerabilityID": "9603f278-37e8-41cd-b74e-b98e804012d5",
+        "line": "64",
+        "column": "13",
+        "confidence": "HIGH",
+        "file": "xd-banking-ui/.eslintrc.js",
+        "code": "// allow debugger during development only",
+        "details": "(1/1) * Possible vulnerability detected: Debugger statements should not be used\nThe debugger statement can be placed anywhere in procedures to suspend execution. Using the debugger statement is similar to setting a breakpoint in the code. By definition such statement must absolutely be removed from the source code to prevent any unexpected behavior or added vulnerability to attacks in production. For more information checkout the CWE-489 (https://cwe.mitre.org/data/definitions/489.html) advisory.",
+        "securityTool": "HorusecEngine",
+        "language": "JavaScript",
+        "severity": "HIGH",
+        "type": "Vulnerability",
+        "commitAuthor": "-",
+        "commitEmail": "-",
+        "commitHash": "-",
+        "commitMessage": "-",
+        "commitDate": "-",
+        "rule_id": "HS-JAVASCRIPT-15",
+        "vulnHash": "7a7e067dc8d10c2598ce7cc8680b0223170d8dbd0f971200f8afc3763de37b47",
+        "deprecatedHashes": [
+          "e4f7cc57be76c49828cccf64957b5e8c195751119605e19ee50890dac56885a0",
+          "dfe445499eab6365c049f7023a88459a4d9eb4bd6ac22421593a3ec76a2f85ce"
+        ],
+        "securityToolVersion": "",
+        "securityToolInfoUri": ""
+      }
+    },
+    {
+      "vulnerabilityID": "00000000-0000-0000-0000-000000000000",
+      "analysisID": "db05e3df-fc66-42d1-9aef-16bb1fa6f3e0",
+      "createdAt": "2022-08-03T18:00:44.286094-05:00",
+      "vulnerabilities": {
+        "vulnerabilityID": "288bd7a9-adf1-437e-89db-404d16ee74d5",
+        "line": "65",
+        "column": "8",
+        "confidence": "HIGH",
+        "file": "xd-banking-ui/.eslintrc.js",
+        "code": "'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'",
+        "details": "(1/1) * Possible vulnerability detected: Debugger statements should not be used\nThe debugger statement can be placed anywhere in procedures to suspend execution. Using the debugger statement is similar to setting a breakpoint in the code. By definition such statement must absolutely be removed from the source code to prevent any unexpected behavior or added vulnerability to attacks in production. For more information checkout the CWE-489 (https://cwe.mitre.org/data/definitions/489.html) advisory.",
+        "securityTool": "HorusecEngine",
+        "language": "JavaScript",
+        "severity": "HIGH",
+        "type": "Vulnerability",
+        "commitAuthor": "-",
+        "commitEmail": "-",
+        "commitHash": "-",
+        "commitMessage": "-",
+        "commitDate": "-",
+        "rule_id": "HS-JAVASCRIPT-15",
+        "vulnHash": "1ac5117d5afc01caf9de447b962113d9e9117dc7238a6da17c44d6326c3e2e38",
+        "deprecatedHashes": [
+          "12f8d56b40cf722d37f772df6fbc495ca24e75dbe279e81e0d65e4569d237f73",
+          "9e3376ffc18f4b4e200bdcce11686cd34a4acd36a397f8b42b6cf52986f8e1d1"
+        ],
+        "securityToolVersion": "",
+        "securityToolInfoUri": ""
+      }
+    }
+  ]
+}

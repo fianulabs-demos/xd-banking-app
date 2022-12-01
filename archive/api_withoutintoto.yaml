@@ -116,10 +116,10 @@
 #        run: |-
 #          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
 #          horusec version
-#          horusec start -p="./" -o json -O sast.horusec.report.json
+#          horusec start -p="./" -o json -O synopsys_blackduck.json
 #
 #      - run: |-
-#          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=sast.horusec.report.json --version=$VERSION
+#          badger capture sast --statements $SAST_STATEMENTS --horusec-output-file=synopsys_blackduck.json --version=$VERSION
 #       Build the Docker image
 #      - name: Build API
 #        run: |-
