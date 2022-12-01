@@ -10,7 +10,7 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   FIANU_ARTIFACT: xd-banking-ui
-  FIANU_VERSION: 0.0.2
+  FIANU_VERSION: ${{ secrets.FIANU_VERSION }}
   FIANU_HOST: ${{ secrets.FIANU_HOST }}
   FIANU_KEY: ${{ secrets.FIANU_COSIGN_KEY }}
   REKOR_HOST: ${{ secrets.REKOR_URL }}
