@@ -9,9 +9,10 @@ env:
   GKE_CLUSTER: fianu-prod  # TODO: update to cluster name
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
-  ARTIFACT: xd-banking-api
-  FIANU_VERSION: 0.3.14
-  FIANU_KEY: k8s://default/cosign
+  FIANU_ARTIFACT: xd-banking-api
+  FIANU_VERSION: 0.0.2
+  FIANU_HOST: ${{ secrets.FIANU_HOST }}
+  FIANU_KEY: ${{ secrets.FIANU_COSIGN_KEY }}
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
 
@@ -30,18 +31,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: fianu
+      - name: setup fianu
         uses: nick-invision/private-action-loader@v3
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          pal-repo-name: badgercorp/actions
+          pal-repo-name: fianulabs/actions
           version: ${{ env.FIANU_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
       - name: Capture
         run: |-
-          fianu take snapshot -o snapshot.json
-          fianu capture data --type build --input snapshot.json
+          fianu session start
 
   gobuild:
 
@@ -88,7 +88,7 @@ jobs:
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           project_id: ${{ secrets.GKE_PROJECT }}
 
-      - name: fianu
+      - name: setup fianu
         uses: nick-invision/private-action-loader@v3
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -112,41 +112,25 @@ jobs:
         with:
           version: v0.12.0
 
-      - name: Setup
+      - name: Auto Set Build Version
         run: |-
-          fianu set-version
-          export VERSION="$(fianu get version)"
-          echo "VERSION=$VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          export FIANU_BUILD_VERSION="$(fianu get version)"
+          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
 
       - name: Running Horusec Security
         run: |-
           touch result.json
           
-          fianu attestor wrap --step horusec.download --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-            
           curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-            
-          cat result.json
+                                                      
+          horusec start -p="./" -o json -O sast.horusec.report.json
           
-          SAST_STATEMENTS=$(fianu attestor hash --path result.json)
-                              
-          fianu attestor wrap --step horusec.scan --key $FIANU_KEY --output-file result.json -- \
-            horusec start -p="./" -o json -O sast.horusec.report.json
-          
-          echo "SAST_STATEMENTS=$SAST_STATEMENTS" >> $GITHUB_ENV
-      - run: |-
-          fianu capture data \
-            --statements $SAST_STATEMENTS --type sast --input sast.horusec.report.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
+          fianu capture artifact --input sast.horusec.report.json --type sast
+
        # Build the Docker image
       - name: Build API
         run: |-
-          fianu attestor wrap --step ko.build --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$VERSION -t $VERSION --push=false --local) "gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION"
-          
-          ARTIFACT_STATEMENTS=$(fianu attestor hash --path result.json)
-          echo "ARTIFACT_STATEMENTS=$ARTIFACT_STATEMENTS" >> $GITHUB_ENV
+          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_BUILD_VERSION -t $FIANU_BUILD_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
 
       - uses: anchore/scan-action/download-grype@v3
         id: grype
@@ -154,54 +138,34 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          fianu attestor wrap --step grype.scan --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
           
-          GRYPE_STATEMENTS=$(fianu attestor hash --path result.json)
-          echo "GRYPE_STATEMENTS=$GRYPE_STATEMENTS" >> $GITHUB_ENV
-
-      - run: |-
-          COMBINED="$ARTIFACT_STATEMENTS,$GRYPE_STATEMENTS"
-          fianu capture data \
-            --statements $COMBINED --key $FIANU_KEY --type containerscan --rekor-url $REKOR_HOST --attest  --input grype_scan.json --version=$VERSION
+          fianu capture artifact --input grype_scan.json --type containerscan
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v1.10.1'
+          cosign-release: 'v1.11.0'
 
       - name: Publish Artifact Image
         run: |-
-          IMAGE=$ARTIFACT
-
-          fianu attestor wrap --step docker.push --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$(fianu attestor hash --path result.json)
+          docker push "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"
           
-          fianu attestor wrap --step cosign.sign --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(fianu attestor hash --path result.json)
+          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"          
+          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION"
           
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
+          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$IMAGE:$FIANU_BUILD_VERSION" 
           
-          fianu attestor wrap --step cosign.generate --key $FIANU_KEY --rekor-url $REKOR_HOST --output-file result.json -- \
-            cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=sig.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-          PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS,$(fianu attestor hash --path result.json)
-          
-          echo "PUBLISH_STATEMENTS=$PUBLISH_STATEMENTS" >> $GITHUB_ENV
-
-      - name: Capture Sign
-        run: |-
-          COMBINED="$ARTIFACT_STATEMENTS,$PUBLISH_STATEMENTS"
-          fianu capture data \
-            --type cosign --statements $COMBINED --input sig.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
+          fianu capture artifact --input cosign.json --type cosign
 
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
           output-file: xd-banking-api/sbom.spdx.json
 
       - run: |-
-          fianu capture data \
-            --type sbom --input sbom.spdx.json --version $VERSION --key $FIANU_KEY --rekor-url $REKOR_HOST --attest
+          fianu capture artifact --input sbom.spdx.json --type sbom
+
+      - run: |-
+          fianu session close

@@ -14,7 +14,8 @@ env:
   GKE_ZONE: us-central1-c   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   ARTIFACT: xd-banking-api
-  BADGER_VERSION: 0.3.14
+  FIANU_VERSION: ${{ secrets.FIANU_VERSION }}
+  FIANU_HOST: ${{ secrets.FIANU_HOST }}
 
 jobs:
   sonarqube:
@@ -39,36 +40,26 @@ jobs:
       - name: Test
         run: go test -coverprofile=cov.out -v ./... -json > report.json
 
-      - name: badger
+      - name: setup fianu
         uses: nick-invision/private-action-loader@v3
         with:
           pal-repo-token: ${{ secrets.GH_ACCESS_TOKEN }}
-          pal-repo-name: badgercorp/actions
+          pal-repo-name: fianulabs/actions
           version: ${{ env.BADGER_VERSION }}
           authorization: ${{ secrets.GH_ACCESS_TOKEN }}
 
       - name: Setup
         run: |-
-          fianu set-version
-          export VERSION="$(badger get version)"
-          echo "VERSION=$VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Set the value
-        id: step_one
-        run: |
-          echo "action_state=yellow" >> $GITHUB_ENV
-      - name: Use the value
-        id: step_two
-        run: |
-          echo "${{ env.action_state }}" # This will output 'yellow'
+          export FIANU_BUILD_VERSION="$(fianu get version)"
+          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
 
       - name: SonarQube Scan
         uses: kitabisa/sonarqube-action@v1.2.0
         with:
           host: http://sonarqube.sonarqube.35.232.161.16.sslip.io
-          login: user
-          password: exNkFxLqEk
+          login: ${{ secrets.SONAR_USERNAME }}
+          password: ${{ secrets.SONAR_PASSWORD }}
           projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
           projectName: fianulabs   # ${{ env.COMPONENT }}
-          projectVersion: ${{ env.VERSION }}
+          projectVersion: ${{ env.FIANU_BUILD_VERSION }}
+
