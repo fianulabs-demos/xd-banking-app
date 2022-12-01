@@ -119,7 +119,7 @@ jobs:
       - name: Build UI Image
         run: |-
           docker build . \
-            --tag "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_VERSION" \
+            --tag "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION" \
             --build-arg GITHUB_SHA="$GITHUB_SHA" \
             --build-arg GITHUB_REF="$GITHUB_REF" \
 
@@ -129,7 +129,7 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_VERSION
+          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
           fianu capture artifact --input grype_scan.json --type containerscan
 
       - name: Install Cosign
@@ -137,7 +137,7 @@ jobs:
         with:
           cosign-release: 'v1.10.1'
 
-      - name: Publish Artifactn Image
+      - name: Publish Artifact Image
         run: |-
           IMAGE=$FIANU_ARTIFACT
           VERSION=$FIANU_BUILD_VERSION
