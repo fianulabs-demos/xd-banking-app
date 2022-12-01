@@ -154,7 +154,7 @@ jobs:
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_VERSION }}:${{ env.FIANU_BUILD_VERSION }}
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
           output-file: xd-banking-ui/sbom.spdx.json
 
       - run: |-
