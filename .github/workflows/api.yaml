@@ -41,7 +41,7 @@ jobs:
 
       - name: Capture
         run: |-
-          fianu session start
+          fianu session start --build-server https://github.com
 
   gobuild:
 
