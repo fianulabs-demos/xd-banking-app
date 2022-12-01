@@ -129,7 +129,7 @@ jobs:
           grype-version: v0.43.0
 
       - run: |-
-          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$ARTIFACT:$VERSION
+          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_VERSION
           fianu capture artifact --input grype_scan.json --type containerscan
 
       - name: Install Cosign
@@ -140,7 +140,7 @@ jobs:
       - name: Publish Artifactn Image
         run: |-
           IMAGE=$FIANU_ARTIFACT
-          VERSION=$FIANU_VERSION
+          VERSION=$FIANU_BUILD_VERSION
 
           docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
           
@@ -154,7 +154,7 @@ jobs:
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_VERSION }}:${{ env.FIANU_BUILD_VERSION }}
           output-file: xd-banking-ui/sbom.spdx.json
 
       - run: |-
