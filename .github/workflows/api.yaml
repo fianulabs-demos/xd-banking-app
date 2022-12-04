@@ -38,140 +38,140 @@ jobs:
 
       - name: Capture
         run: |-
-          fianu session start --build-server https://github.com
-
-  gobuild:
-
-    name: Go Build and Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test
-        run: go test -v ./...
-
-  dockerbuild:
-
-    name: Docker Build, Scan, & Publish
-    runs-on: ubuntu-latest
-    environment: production
-
-    permissions:
-      id-token: write # Needed for keyless.
-      contents: read
-      # actions permissions are needed to read info on the workflow and
-      # workflow run.
-      actions: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      # Setup gcloud CLI
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      - name: setup fianu
-        uses: fianulabs/actions@main
-        with:
-          version: ${{ env.FIANU_VERSION }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
-      # Get the GKE credentials so we can deploy to the cluster
-      - uses: google-github-actions/get-gke-credentials@v0.2.1
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GKE_SA_KEY }}
-
-      - uses: imjasonh/setup-ko@v0.6
-        with:
-          version: v0.12.0
-
-      - name: Auto Set Build Version
-        run: |-
-          export FIANU_BUILD_VERSION="$(fianu get version)"
-          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
-
-      - name: Running Horusec Security
-        run: |-
-          touch result.json
-
-          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-
-          horusec start -p="./" -o json -O sast.horusec.report.json
-
-          fianu capture artifact --input sast.horusec.report.json --type sast
-
-       # Build the Docker image
-      - name: Build API
-        run: |-
-          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_BUILD_VERSION -t $FIANU_BUILD_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-
-      - uses: anchore/scan-action/download-grype@v3
-        id: grype
-        with:
-          grype-version: v0.43.0
-
-      - run: |-
-          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-
-          fianu capture artifact --input grype_scan.json --type containerscan
-
-      - name: Mock Capture Synopsys Blackduck
-        run: |-
-          fianu capture artifact --input synopsys_blackduck.json --type blackduck
-
-      - name: Mock Capture Lacework Inline Scan
-        run: |-
-          fianu capture artifact --input lacework_inlinescan.json --type lacework
-
-      - name: Mock Capture Checkmarx Inline Scan
-        run: |-
-          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v1.11.0'
-
-      - name: Publish Artifact Image
-        run: |-
-          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-
-          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-
-          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-
-          fianu capture artifact --input cosign.json --type cosign
-
-      - name: Create and Publish Artifact SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
-          output-file: xd-banking-api/sbom.spdx.json
-
-      - run: |-
-          fianu capture artifact --input sbom.spdx.json --type sbom
-
-      - run: |-
-          fianu session close
+          fianu session start
+#
+#  gobuild:
+#
+#    name: Go Build and Test
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Set up Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.17
+#
+#      - name: Build
+#        run: go build -v ./...
+#
+#      - name: Test
+#        run: go test -v ./...
+#
+#  dockerbuild:
+#
+#    name: Docker Build, Scan, & Publish
+#    runs-on: ubuntu-latest
+#    environment: production
+#
+#    permissions:
+#      id-token: write # Needed for keyless.
+#      contents: read
+#      # actions permissions are needed to read info on the workflow and
+#      # workflow run.
+#      actions: read
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#
+#      # Setup gcloud CLI
+#      - name: Setup gcloud CLI
+#        uses: google-github-actions/setup-gcloud@v0.2.0
+#        with:
+#          service_account_key: ${{ secrets.GKE_SA_KEY }}
+#          project_id: ${{ secrets.GKE_PROJECT }}
+#
+#      - name: setup fianu
+#        uses: fianulabs/actions@main
+#        with:
+#          version: ${{ env.FIANU_VERSION }}
+#
+#      # Configure Docker to use the gcloud command-line tool as a credential
+#      # helper for authentication
+#      - run: |-
+#          gcloud --quiet auth configure-docker
+#
+#      # Get the GKE credentials so we can deploy to the cluster
+#      - uses: google-github-actions/get-gke-credentials@v0.2.1
+#        with:
+#          cluster_name: ${{ env.GKE_CLUSTER }}
+#          location: ${{ env.GKE_ZONE }}
+#          credentials: ${{ secrets.GKE_SA_KEY }}
+#
+#      - uses: imjasonh/setup-ko@v0.6
+#        with:
+#          version: v0.12.0
+#
+#      - name: Auto Set Build Version
+#        run: |-
+#          export FIANU_BUILD_VERSION="$(fianu get version)"
+#          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
+#
+#      - name: Running Horusec Security
+#        run: |-
+#          touch result.json
+#
+#          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+#
+#          horusec start -p="./" -o json -O sast.horusec.report.json
+#
+#          fianu capture artifact --input sast.horusec.report.json --type sast
+#
+#       # Build the Docker image
+#      - name: Build API
+#        run: |-
+#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_BUILD_VERSION -t $FIANU_BUILD_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
+#
+#      - uses: anchore/scan-action/download-grype@v3
+#        id: grype
+#        with:
+#          grype-version: v0.43.0
+#
+#      - run: |-
+#          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
+#
+#          fianu capture artifact --input grype_scan.json --type containerscan
+#
+#      - name: Mock Capture Synopsys Blackduck
+#        run: |-
+#          fianu capture artifact --input synopsys_blackduck.json --type blackduck
+#
+#      - name: Mock Capture Lacework Inline Scan
+#        run: |-
+#          fianu capture artifact --input lacework_inlinescan.json --type lacework
+#
+#      - name: Mock Capture Checkmarx Inline Scan
+#        run: |-
+#          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx
+#
+#      - name: Install Cosign
+#        uses: sigstore/cosign-installer@main
+#        with:
+#          cosign-release: 'v1.11.0'
+#
+#      - name: Publish Artifact Image
+#        run: |-
+#          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
+#
+#          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
+#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
+#
+#          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
+#
+#          fianu capture artifact --input cosign.json --type cosign
+#
+#      - name: Create and Publish Artifact SBOM
+#        uses: anchore/sbom-action@v0
+#        with:
+#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
+#          output-file: xd-banking-api/sbom.spdx.json
+#
+#      - run: |-
+#          fianu capture artifact --input sbom.spdx.json --type sbom
+#
+#      - run: |-
+#          fianu session close
