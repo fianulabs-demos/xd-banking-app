@@ -41,10 +41,10 @@ jobs:
         uses: fianulabs/actions@main
         with:
           version: ${{ env.FIANU_VERSION }}
-#
-#      - name: Capture
-#        run: |-
-#          fianu session start
+
+      - name: Capture
+        run: |-
+          fianu session start
 #
 #  testing:
 #    runs-on: ubuntu-18.04
