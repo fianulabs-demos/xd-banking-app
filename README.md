@@ -8,6 +8,4 @@ Demo Bancorp Application
 
 
 
-whats happening
-
-
+db fixed
