@@ -147,7 +147,7 @@ jobs:
 
       - name: Mock Capture Lacework Inline Scan
         run: |-
-          fianu capture artifact --input lacework_inlinescan.json --type lacework
+          fianu capture artifact --input lacework_inlinescan.json --type lacework --source cli
 
       - name: Mock Capture Checkmarx Inline Scan
         run: |-
