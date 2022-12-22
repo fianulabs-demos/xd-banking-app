@@ -111,7 +111,7 @@ jobs:
           command: npm run test:e2e:ci
 
       - run: |-
-          fianu capture artifact --input cypress/results/mochawesome.json --type testing
+          fianu capture artifact --input cypress/results/mochawesome.json --type testing --source cli
 
       - name: Build UI
         run: npm run build
@@ -130,7 +130,7 @@ jobs:
 
       - run: |-
           ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-          fianu capture artifact --input grype_scan.json --type containerscan
+          fianu capture artifact --input grype_scan.json --type containerscan --source cli
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
@@ -149,7 +149,7 @@ jobs:
 
           cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
 
-          fianu capture artifact --input cosign.json --type cosign
+          fianu capture artifact --input cosign.json --type cosign --source cli
 
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0
@@ -158,7 +158,7 @@ jobs:
           output-file: xd-banking-ui/sbom.spdx.json
 
       - run: |-
-          fianu capture artifact --input sbom.spdx.json --type sbom
+          fianu capture artifact --input sbom.spdx.json --type sbom --source cli
 
       - run: |-
           fianu session close

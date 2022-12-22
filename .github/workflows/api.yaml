@@ -124,7 +124,7 @@ jobs:
 
           horusec start -p="./" -o json -O sast.horusec.report.json
 
-          fianu capture artifact --input sast.horusec.report.json --type sast
+          fianu capture artifact --input sast.horusec.report.json --type sast --source cli
 
        # Build the Docker image
       - name: Build API
@@ -139,11 +139,11 @@ jobs:
       - run: |-
           ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
 
-          fianu capture artifact --input grype_scan.json --type containerscan
+          fianu capture artifact --input grype_scan.json --type containerscan --source cli
 
       - name: Mock Capture Synopsys Blackduck
         run: |-
-          fianu capture artifact --input synopsys_blackduck.json --type blackduck
+          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source cli
 
       - name: Mock Capture Lacework Inline Scan
         run: |-
@@ -151,7 +151,7 @@ jobs:
 
       - name: Mock Capture Checkmarx Inline Scan
         run: |-
-          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx
+          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx --source cli
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
@@ -167,7 +167,7 @@ jobs:
 
           cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
 
-          fianu capture artifact --input cosign.json --type cosign
+          fianu capture artifact --input cosign.json --type cosign --source cli
 
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0
@@ -176,7 +176,7 @@ jobs:
           output-file: xd-banking-api/sbom.spdx.json
 
       - run: |-
-          fianu capture artifact --input sbom.spdx.json --type sbom
+          fianu capture artifact --input sbom.spdx.json --type sbom --source cli
 
       - run: |-
           fianu session close
