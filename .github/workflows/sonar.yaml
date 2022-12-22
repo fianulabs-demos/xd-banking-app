@@ -47,8 +47,8 @@ jobs:
 
       - name: Setup
         run: |-
-          export FIANU_BUILD_VERSION="$(fianu get version)"
-          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
+          export FIANU_ARTIFACT_VERSION="$(fianu get version)"
+          echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
 
       - name: SonarQube Scan
         uses: kitabisa/sonarqube-action@v1.2.0
@@ -58,5 +58,5 @@ jobs:
           password: ${{ secrets.SONAR_PASSWORD }}
           projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
           projectName: fianulabs   # ${{ env.COMPONENT }}
-          projectVersion: ${{ env.FIANU_BUILD_VERSION }}
+          projectVersion: ${{ env.FIANU_ARTIFACT_VERSION }}
 
