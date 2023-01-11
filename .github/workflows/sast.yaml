@@ -37,6 +37,13 @@ jobs:
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
 
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/golang@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          json: true
+
   inner:
     name: Security Tooling
     uses: fianulabs/tools/.github/workflows/build.yaml@main
