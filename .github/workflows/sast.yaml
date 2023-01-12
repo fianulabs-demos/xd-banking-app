@@ -49,6 +49,7 @@ jobs:
     with:
       working-directory: ./xd-banking-api
       project-type: golang
+      fianu-artifact: xd-banking-api
 
   ui-tooling:
     name: Security Tooling
@@ -57,3 +58,4 @@ jobs:
     with:
       working-directory: ./xd-banking-ui
       project-type: node
+      fianu-artifact: xd-banking-ui
