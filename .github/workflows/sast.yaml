@@ -40,6 +40,7 @@ jobs:
         run: |-
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
+          ls
 
   inner:
     name: Security Tooling
