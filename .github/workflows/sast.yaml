@@ -46,3 +46,6 @@ jobs:
     name: Security Tooling
     uses: fianulabs/tools/.github/workflows/build.yaml@main
     secrets: inherit
+    working-directory: ./xd-banking-api
+    with:
+      working-directory: ./xd-banking-api
