@@ -42,10 +42,18 @@ jobs:
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
           ls
 
-  inner:
+  api-tooling:
     name: Security Tooling
     uses: fianulabs/tools/.github/workflows/build.yaml@main
     secrets: inherit
     with:
       working-directory: ./xd-banking-api
       project-type: golang
+
+  ui-tooling:
+    name: Security Tooling
+    uses: fianulabs/tools/.github/workflows/build.yaml@main
+    secrets: inherit
+    with:
+      working-directory: ./xd-banking-ui
+      project-type: node
