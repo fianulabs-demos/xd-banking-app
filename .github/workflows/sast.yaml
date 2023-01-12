@@ -48,3 +48,4 @@ jobs:
     secrets: inherit
     with:
       working-directory: ./xd-banking-api
+      project-type: golang
