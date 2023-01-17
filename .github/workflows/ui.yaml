@@ -2,7 +2,7 @@ name: CI Pipeline Build UI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ skip ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
