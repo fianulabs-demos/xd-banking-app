@@ -2,7 +2,7 @@ name: CI SAST Scan
 
 on:
   push:
-    branches: [ snyk ]
+    branches: [ main ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -40,7 +40,6 @@ jobs:
         run: |-
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
-          ls
 
   api-tooling:
     name: Security Tooling
