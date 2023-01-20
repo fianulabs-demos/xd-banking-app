@@ -51,12 +51,30 @@ jobs:
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
 
       - name: SonarQube Scan
-        uses: kitabisa/sonarqube-action@v1.2.0
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
+          LOGIN: ${{ secrets.SONAR_USERNAME }}
+          PASSWORD: ${{ secrets.SONAR_PASSWORD }}
+          PROJECT_KEY: xd-banking-app
+          PROJECT_NAME: fianulabs
+          PROJECT_VERSION: ${{ env.FIANU_ARTIFACT_VERSION }}
         with:
-          host: http://sonarqube.sonarqube.35.232.161.16.sslip.io
-          login: ${{ secrets.SONAR_USERNAME }}
-          password: ${{ secrets.SONAR_PASSWORD }}
-          projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
-          projectName: fianulabs   # ${{ env.COMPONENT }}
-          projectVersion: ${{ env.FIANU_ARTIFACT_VERSION }}
+          args: >
+            -Dsonar.host.url=${SONAR_HOST_URL}
+            -Dsonar.sources=.
+            -Dsonar.projectKey=${PROJECT_KEY}
+            -Dsonar.projectName=${PROJECT_NAME}
+            -Dsonar.login=${LOGIN}
+            -Dsonar.password=${PASSWORD}
+
+#      - name: SonarQube Scan
+#        uses: kitabisa/sonarqube-action@v1.2.0
+#        with:
+#          host: http://sonarqube.sonarqube.35.232.161.16.sslip.io
+#          login: ${{ secrets.SONAR_USERNAME }}
+#          password: ${{ secrets.SONAR_PASSWORD }}
+#          projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
+#          projectName: fianulabs   # ${{ env.COMPONENT }}
+#          projectVersion: ${{ env.FIANU_ARTIFACT_VERSION }}
 
