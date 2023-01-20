@@ -53,20 +53,17 @@ jobs:
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
-          LOGIN: ${{ secrets.SONAR_USERNAME }}
-          PASSWORD: ${{ secrets.SONAR_PASSWORD }}
           PROJECT_KEY: xd-banking-app
           PROJECT_NAME: fianulabs
           PROJECT_VERSION: ${{ env.FIANU_ARTIFACT_VERSION }}
         with:
           args: >
-            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
             -Dsonar.sources=.
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
-            -Dsonar.projectName=${PROJECT_NAME}
-            -Dsonar.login=${LOGIN}
-            -Dsonar.password=${PASSWORD}
+            -Dsonar.projectName=${{ env.PROJECT_NAME }}
+            -Dsonar.projectVersion=${{ env.PROJECT_VERSION }}
 
 #      - name: SonarQube Scan
 #        uses: kitabisa/sonarqube-action@v1.2.0
