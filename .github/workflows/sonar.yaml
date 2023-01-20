@@ -58,6 +58,9 @@ jobs:
           PROJECT_KEY: xd-banking-app
           PROJECT_NAME: fianulabs
           PROJECT_VERSION: ${{ env.FIANU_ARTIFACT_VERSION }}
+          COMMIT: ${{ env.GITHUB_SHA }}
+          REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+          SERVER: ${{ env.GITHUB_SERVER_URL }}
         with:
           args: >
             -Dsonar.sources=.
@@ -71,8 +74,8 @@ jobs:
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.test.exclusions=**/vendor/**,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
             -Dsonar.analysis.version=${{ env.PROJECT_VERSION }}
-            -Dsonar.analysis.commit=${{ env.GITHUB_SHA }}
-            -Dsonar.analysis.buildURI=${env.GITHUB_SERVER_URL}/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}
+            -Dsonar.analysis.commit=${{ env.COMMIT }}
+            -Dsonar.analysis.buildURI=${env.SERVER}/${{ env.REPOSITORY }}/commit/${{ env.COMMIT }}
             
             
 
