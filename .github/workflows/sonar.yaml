@@ -64,6 +64,17 @@ jobs:
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.projectName=${{ env.PROJECT_NAME }}
             -Dsonar.projectVersion=${{ env.PROJECT_VERSION }}
+            -Dsonar.go.coverage.reportPaths=/github/workspace/xd-banking-api/cov.out
+            -Dsonar.go.tests.reportPaths=/github/workspace/xd-banking-api/report.json
+            -Dsonar.exclusions=**/*_test.go,**/vendor/**,**/testdata/*,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=**/*_test.go
+            -Dsonar.test.exclusions=**/vendor/**,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
+            -Dsonar.analysis.version=${{ env.projectVersion }}
+            -Dsonar.analysis.commit=${{ env.GITHUB_SHA }}
+            -Dsonar.analysis.buildURI=${env.GITHUB_SERVER_URL}/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}
+            
+            
 
 #      - name: SonarQube Scan
 #        uses: kitabisa/sonarqube-action@v1.2.0
