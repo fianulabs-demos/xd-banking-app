@@ -61,7 +61,7 @@ jobs:
           PROJECT_VERSION: ${{ env.FIANU_ARTIFACT_VERSION }}
         with:
           args: >
-            -Dsonar.host.url=${SONAR_HOST_URL}
+            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
             -Dsonar.sources=.
             -Dsonar.projectKey=${PROJECT_KEY}
             -Dsonar.projectName=${PROJECT_NAME}
