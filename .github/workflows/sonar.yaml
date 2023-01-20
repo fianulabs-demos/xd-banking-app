@@ -48,12 +48,16 @@ jobs:
       - name: Setup
         env:
           GITHUB_SHA: ${{ env.GITHUB_SHA }}
+          GITHUB_REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
+          GITHUB_SERVER_URL: ${{ env.GITHUB_SERVER_URL }}
         run: |-
           echo "commit is"
           echo "$GITHUB_SHA"
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
           echo "GITHUB_SHA=$GITHUB_SHA" >> $GITHUB_ENV
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" >> $GITHUB_ENV
+          echo "GITHUB_SERVER_URL=$GITHUB_SERVER_URL" >> $GITHUB_ENV
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -62,25 +66,21 @@ jobs:
           SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
           PROJECT_KEY: xd-banking-app
           PROJECT_NAME: fianulabs
-          PROJECT_VERSION: ${{ env.FIANU_ARTIFACT_VERSION }}
-          COMMIT: ${{ env.GITHUB_SHA }}
-          REPOSITORY: ${{ env.GITHUB_REPOSITORY }}
-          SERVER: ${{ env.GITHUB_SERVER_URL }}
         with:
           args: >
             -Dsonar.sources=.
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.projectName=${{ env.PROJECT_NAME }}
-            -Dsonar.projectVersion=${{ env.PROJECT_VERSION }}
+            -Dsonar.projectVersion=${{ env.FIANU_ARTIFACT_VERSION }}
             -Dsonar.go.coverage.reportPaths=/github/workspace/xd-banking-api/cov.out
             -Dsonar.go.tests.reportPaths=/github/workspace/xd-banking-api/report.json
             -Dsonar.exclusions=**/*_test.go,**/vendor/**,**/testdata/*,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
             -Dsonar.tests=.
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.test.exclusions=**/vendor/**,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
-            -Dsonar.analysis.version=${{ env.PROJECT_VERSION }}
-            -Dsonar.analysis.commit=${{ env.COMMIT }}
-            -Dsonar.analysis.buildURI=${{ env.SERVER }}/${{ env.REPOSITORY }}/commit/${{ env.COMMIT }}
+            -Dsonar.analysis.version=${{ env.FIANU_ARTIFACT_VERSION }}
+            -Dsonar.analysis.commit=${{ env.GITHUB_SHA }}
+            -Dsonar.analysis.buildURI=${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}
             
             
 
