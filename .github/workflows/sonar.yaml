@@ -46,10 +46,14 @@ jobs:
           version: ${{ env.FIANU_VERSION }}
 
       - name: Setup
+        env:
+          GITHUB_SHA: ${{ env.GITHUB_SHA }}
         run: |-
+          echo "commit is"
+          echo "$GITHUB_SHA"
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
-          echo "GITHUB_SHA=${{ env.GITHUB_SHA }}" >> $GITHUB_ENV
+          echo "GITHUB_SHA=$GITHUB_SHA" >> $GITHUB_ENV
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
