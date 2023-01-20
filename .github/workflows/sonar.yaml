@@ -76,7 +76,7 @@ jobs:
             -Dsonar.test.exclusions=**/vendor/**,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
             -Dsonar.analysis.version=${{ env.PROJECT_VERSION }}
             -Dsonar.analysis.commit=${{ env.COMMIT }}
-            -Dsonar.analysis.buildURI=$SERVER/${{ env.REPOSITORY }}/commit/${{ env.COMMIT }}
+            -Dsonar.analysis.buildURI=${{ env.SERVER }}/${{ env.REPOSITORY }}/commit/${{ env.COMMIT }}
             
             
 
