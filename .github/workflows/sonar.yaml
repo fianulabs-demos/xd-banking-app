@@ -63,7 +63,7 @@ jobs:
           args: >
             -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
             -Dsonar.sources=.
-            -Dsonar.projectKey=${PROJECT_KEY}
+            -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.projectName=${PROJECT_NAME}
             -Dsonar.login=${LOGIN}
             -Dsonar.password=${PASSWORD}
