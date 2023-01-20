@@ -70,7 +70,7 @@ jobs:
             -Dsonar.tests=.
             -Dsonar.test.inclusions=**/*_test.go
             -Dsonar.test.exclusions=**/vendor/**,xd-banking-ui/*,**/xd-banking-ui/**,xd-banking-ui/**/*
-            -Dsonar.analysis.version=${{ env.projectVersion }}
+            -Dsonar.analysis.version=${{ env.PROJECT_VERSION }}
             -Dsonar.analysis.commit=${{ env.GITHUB_SHA }}
             -Dsonar.analysis.buildURI=${env.GITHUB_SERVER_URL}/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}
             
