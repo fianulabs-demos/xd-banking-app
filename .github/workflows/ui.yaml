@@ -2,7 +2,7 @@ name: CI Pipeline Build UI
 
 on:
   push:
-    branches: [ skip ]
+    branches: [ main ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -44,6 +44,10 @@ jobs:
       - name: Capture
         run: |-
           fianu session start
+        env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
 
   testing:
     runs-on: ubuntu-18.04
@@ -110,7 +114,11 @@ jobs:
           record: true
           command: npm run test:e2e:ci
 
-      - run: |-
+      - env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+        run: |-
           fianu capture artifact --input cypress/results/mochawesome.json --type testing --source cli
 
       - name: Build UI
@@ -128,7 +136,11 @@ jobs:
         with:
           grype-version: v0.43.0
 
-      - run: |-
+      - env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+        run: |-
           ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
           fianu capture artifact --input grype_scan.json --type containerscan --source cli
 
@@ -138,6 +150,10 @@ jobs:
           cosign-release: 'v1.10.1'
 
       - name: Publish Artifact Image
+        env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
           IMAGE=$FIANU_ARTIFACT
           VERSION=$FIANU_ARTIFACT_VERSION
@@ -157,8 +173,16 @@ jobs:
           image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_ARTIFACT_VERSION }}
           output-file: xd-banking-ui/sbom.spdx.json
 
-      - run: |-
+      - env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+        run: |-
           fianu capture artifact --input sbom.spdx.json --type sbom --source cli
 
-      - run: |-
+      - env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+        run: |-
           fianu session close
