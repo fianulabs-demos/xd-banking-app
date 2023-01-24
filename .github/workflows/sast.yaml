@@ -58,3 +58,30 @@ jobs:
       working-directory: ./xd-banking-ui
       project-type: node
       fianu-artifact: xd-banking-ui
+
+  mock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: setup fianu
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ env.FIANU_VERSION }}
+
+      - name: Auto Set Build Version
+        run: |-
+          export FIANU_ARTIFACT_VERSION="$(fianu get version)"
+          echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
+
+      - name: Mock Capture Checkmarx Plugin Result
+        run: |-
+          fianu capture artifact --input cx.xml --type checkmarx --source plugin
+
+      - name: Mock Capture Synopsys Blackduck
+        run: |-
+          fianu capture artifact --input bd.json --type blackduck --source rapidscan
