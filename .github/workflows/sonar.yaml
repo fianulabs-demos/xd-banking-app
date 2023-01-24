@@ -68,7 +68,6 @@ jobs:
           SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
           PROJECT_KEY: xd-banking-app
           PROJECT_NAME: fianulabs
-          ARTIFACT: ${{
         with:
           args: >
             -Dsonar.sources=.

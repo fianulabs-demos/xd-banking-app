@@ -78,10 +78,11 @@ jobs:
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
 
-      - name: Mock Capture Checkmarx Plugin Result
+      - name: Mock Captures
+        env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
           fianu capture artifact --input cx.xml --type checkmarx --source plugin
-
-      - name: Mock Capture Synopsys Blackduck
-        run: |-
           fianu capture artifact --input bd.json --type blackduck --source rapidscan
