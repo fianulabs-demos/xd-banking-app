@@ -16,10 +16,6 @@ env:
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
 
-defaults:
-  run:
-    working-directory: ./xd-banking-api
-
 jobs:
 
   init:
