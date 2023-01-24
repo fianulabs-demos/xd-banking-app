@@ -166,6 +166,24 @@ jobs:
           cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
 
           fianu capture artifact --input cosign.json --type cosign --source cli
+          
+            - uses: lacework/lw-scanner-action@v1.2.0
+        name: Scan container image for vulnerabilities using Lacework
+        with:
+          SAVE_RESULTS_IN_LACEWORK: true
+          LW_ACCOUNT_NAME: ${{ secrets.LW_ACCOUNT_NAME }}
+          LW_ACCESS_TOKEN: ${{ secrets.LW_ACCESS_TOKEN }}
+          IMAGE_NAME: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}
+          IMAGE_TAG: ${{ env.FIANU_ARTIFACT_VERSION }}
+
+      - name: Capture Lacework
+        env:
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+        run: |-
+          cat $GITHUB_WORKSPACE/evaluations/$PROJECT_ID/$FIANU_ARTIFACT/$FIANU_ARTIFACT_VERSION/evaluation_*.json > lacework.json
+          fianu capture artifact --input lacework.json --type lacework --source inlinescan --resource-uri https://fianu.lacework.net
 
       - name: Create and Publish Artifact SBOM
         uses: anchore/sbom-action@v0

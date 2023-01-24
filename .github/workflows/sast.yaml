@@ -81,4 +81,4 @@ jobs:
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
           fianu capture artifact --input cx.xml --type checkmarx --source plugin
-          fianu capture artifact --input bd.json --type blackduck --source rapidscan
+          fianu capture artifact --input bd.json --consolidate --type blackduck --source rapidscan
