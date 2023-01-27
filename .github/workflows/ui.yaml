@@ -133,8 +133,6 @@ jobs:
 
       - uses: anchore/scan-action/download-grype@v3
         id: grype
-        with:
-          grype-version: v0.56.0
 
       - env:
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
