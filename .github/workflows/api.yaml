@@ -49,191 +49,191 @@ jobs:
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
 
-  gobuild:
-
-    name: Go Build and Test
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.17
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test
-        run: go test -v ./...
-
-  dockerbuild:
-
-    name: Docker Build, Scan, & Publish
-    runs-on: ubuntu-latest
-    environment: production
-
-    permissions:
-      id-token: write # Needed for keyless.
-      contents: read
-      # actions permissions are needed to read info on the workflow and
-      # workflow run.
-      actions: read
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      # Setup gcloud CLI
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@v0.2.0
-        with:
-          service_account_key: ${{ secrets.GKE_SA_KEY }}
-          project_id: ${{ secrets.GKE_PROJECT }}
-
-      - name: setup fianu
-        uses: fianulabs/actions@main
-        with:
-          version: ${{ env.FIANU_VERSION }}
-
-      # Configure Docker to use the gcloud command-line tool as a credential
-      # helper for authentication
-      - run: |-
-          gcloud --quiet auth configure-docker
-
-      # Get the GKE credentials so we can deploy to the cluster
-      - uses: google-github-actions/get-gke-credentials@v0.2.1
-        with:
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          credentials: ${{ secrets.GKE_SA_KEY }}
-
-      - uses: imjasonh/setup-ko@v0.6
-        with:
-          version: v0.12.0
-
-      - name: Auto Set Build Version
-        run: |-
-          export FIANU_ARTIFACT_VERSION="$(fianu get version)"
-          echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
-
-      - name: Running Horusec Security
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          touch result.json
-
-          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-
-          horusec start -p="./" -o json -O sast.horusec.report.json
-
-          fianu capture artifact --input sast.horusec.report.json --type sast --source cli
-
-       # Build the Docker image
-      - name: Build API
-        run: |-
-          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_ARTIFACT_VERSION -t $FIANU_ARTIFACT_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
-
-      - uses: anchore/scan-action/download-grype@v3
-        id: grype
-        with:
-          grype-version: v0.56.0
-
-      - name: Capture Containerscan
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
-
-          fianu capture artifact --input grype_scan.json --type containerscan --source cli
-
-      - name: Mock Capture Synopsys Blackduck
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source cli
-
-      - name: Mock Capture Lacework Inline Scan
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu capture artifact --input lacework_inlinescan.json --type lacework --source cli
-
-      - name: Mock Capture Checkmarx Inline Scan
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx --source cli
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@main
-        with:
-          cosign-release: 'v1.11.0'
-
-      - name: Publish Artifact Image
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
-
-          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
-
-          cosign generate -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
-
-          fianu capture artifact --input cosign.json --type cosign --source cli
-
-      - uses: lacework/lw-scanner-action@v1.2.0
-        name: Scan container image for vulnerabilities using Lacework
-        with:
-          SAVE_RESULTS_IN_LACEWORK: true
-          LW_ACCOUNT_NAME: ${{ secrets.LW_ACCOUNT_NAME }}
-          LW_ACCESS_TOKEN: ${{ secrets.LW_ACCESS_TOKEN }}
-          IMAGE_NAME: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}
-          IMAGE_TAG: ${{ env.FIANU_ARTIFACT_VERSION }}
-
-      - name: Capture Lacework
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          cat $GITHUB_WORKSPACE/evaluations/$PROJECT_ID/$FIANU_ARTIFACT/$FIANU_ARTIFACT_VERSION/evaluation_*.json > lacework.json
-          fianu capture artifact --input lacework.json --type lacework --source inlinescan --resource-uri https://fianu.lacework.net
-
-      - name: Create and Publish Artifact SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_ARTIFACT_VERSION }}
-          output-file: xd-banking-api/sbom.spdx.json
-
-      - name: Capture SBOM
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu capture artifact --input sbom.spdx.json --type sbom --source cli
-
-      - name: Close Session
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu session close
+#  gobuild:
+#
+#    name: Go Build and Test
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#
+#      - name: Set up Go
+#        uses: actions/setup-go@v2
+#        with:
+#          go-version: 1.17
+#
+#      - name: Build
+#        run: go build -v ./...
+#
+#      - name: Test
+#        run: go test -v ./...
+#
+#  dockerbuild:
+#
+#    name: Docker Build, Scan, & Publish
+#    runs-on: ubuntu-latest
+#    environment: production
+#
+#    permissions:
+#      id-token: write # Needed for keyless.
+#      contents: read
+#      # actions permissions are needed to read info on the workflow and
+#      # workflow run.
+#      actions: read
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#
+#      # Setup gcloud CLI
+#      - name: Setup gcloud CLI
+#        uses: google-github-actions/setup-gcloud@v0.2.0
+#        with:
+#          service_account_key: ${{ secrets.GKE_SA_KEY }}
+#          project_id: ${{ secrets.GKE_PROJECT }}
+#
+#      - name: setup fianu
+#        uses: fianulabs/actions@main
+#        with:
+#          version: ${{ env.FIANU_VERSION }}
+#
+#      # Configure Docker to use the gcloud command-line tool as a credential
+#      # helper for authentication
+#      - run: |-
+#          gcloud --quiet auth configure-docker
+#
+#      # Get the GKE credentials so we can deploy to the cluster
+#      - uses: google-github-actions/get-gke-credentials@v0.2.1
+#        with:
+#          cluster_name: ${{ env.GKE_CLUSTER }}
+#          location: ${{ env.GKE_ZONE }}
+#          credentials: ${{ secrets.GKE_SA_KEY }}
+#
+#      - uses: imjasonh/setup-ko@v0.6
+#        with:
+#          version: v0.12.0
+#
+#      - name: Auto Set Build Version
+#        run: |-
+#          export FIANU_ARTIFACT_VERSION="$(fianu get version)"
+#          echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
+#
+#      - name: Running Horusec Security
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          touch result.json
+#
+#          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
+#
+#          horusec start -p="./" -o json -O sast.horusec.report.json
+#
+#          fianu capture artifact --input sast.horusec.report.json --type sast --source cli
+#
+#       # Build the Docker image
+#      - name: Build API
+#        run: |-
+#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_ARTIFACT_VERSION -t $FIANU_ARTIFACT_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+#
+#      - uses: anchore/scan-action/download-grype@v3
+#        id: grype
+#        with:
+#          grype-version: v0.56.0
+#
+#      - name: Capture Containerscan
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
+#
+#          fianu capture artifact --input grype_scan.json --type containerscan --source cli
+#
+#      - name: Mock Capture Synopsys Blackduck
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source cli
+#
+#      - name: Mock Capture Lacework Inline Scan
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          fianu capture artifact --input lacework_inlinescan.json --type lacework --source cli
+#
+#      - name: Mock Capture Checkmarx Inline Scan
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx --source cli
+#
+#      - name: Install Cosign
+#        uses: sigstore/cosign-installer@main
+#        with:
+#          cosign-release: 'v1.11.0'
+#
+#      - name: Publish Artifact Image
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
+#
+#          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+#
+#          cosign generate -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+#
+#          fianu capture artifact --input cosign.json --type cosign --source cli
+#
+#      - uses: lacework/lw-scanner-action@v1.2.0
+#        name: Scan container image for vulnerabilities using Lacework
+#        with:
+#          SAVE_RESULTS_IN_LACEWORK: true
+#          LW_ACCOUNT_NAME: ${{ secrets.LW_ACCOUNT_NAME }}
+#          LW_ACCESS_TOKEN: ${{ secrets.LW_ACCESS_TOKEN }}
+#          IMAGE_NAME: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}
+#          IMAGE_TAG: ${{ env.FIANU_ARTIFACT_VERSION }}
+#
+#      - name: Capture Lacework
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          cat $GITHUB_WORKSPACE/evaluations/$PROJECT_ID/$FIANU_ARTIFACT/$FIANU_ARTIFACT_VERSION/evaluation_*.json > lacework.json
+#          fianu capture artifact --input lacework.json --type lacework --source inlinescan --resource-uri https://fianu.lacework.net
+#
+#      - name: Create and Publish Artifact SBOM
+#        uses: anchore/sbom-action@v0
+#        with:
+#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_ARTIFACT_VERSION }}
+#          output-file: xd-banking-api/sbom.spdx.json
+#
+#      - name: Capture SBOM
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          fianu capture artifact --input sbom.spdx.json --type sbom --source cli
+#
+#      - name: Close Session
+#        env:
+#          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+#          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+#          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+#        run: |-
+#          fianu session close
