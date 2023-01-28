@@ -52,8 +52,6 @@ jobs:
           GITHUB_SERVER_URL: ${{ env.GITHUB_SERVER_URL }}
           ARTIFACT: ${{ env.ARTIFACT }}
         run: |-
-          echo "commit is"
-          echo "$GITHUB_SHA"
           export FIANU_ARTIFACT_VERSION="$(fianu get version)"
           echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
           echo "FIANU_ARTIFACT=$ARTIFACT" >> $GITHUB_ENV
@@ -66,8 +64,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
-          PROJECT_KEY: xd-banking-app
-          PROJECT_NAME: fianulabs
+          PROJECT_KEY: ${{ env.GITHUB_REPOSITORY_ID }}
+          PROJECT_NAME: aesthetic change
         with:
           args: >
             -Dsonar.sources=.
@@ -84,16 +82,4 @@ jobs:
             -Dsonar.analysis.commit=${{ env.GITHUB_SHA }}
             -Dsonar.analysis.buildURI=${{ env.GITHUB_SERVER_URL }}/${{ env.GITHUB_REPOSITORY }}/commit/${{ env.GITHUB_SHA }}
             -Dsonar.analysis.artifact=${{ env.FIANU_ARTIFACT }}
-            
-            
-
-#      - name: SonarQube Scan
-#        uses: kitabisa/sonarqube-action@v1.2.0
-#        with:
-#          host: http://sonarqube.sonarqube.35.232.161.16.sslip.io
-#          login: ${{ secrets.SONAR_USERNAME }}
-#          password: ${{ secrets.SONAR_PASSWORD }}
-#          projectKey: xd-banking-app                    # ${{ env.ORGANIZATION }}
-#          projectName: fianulabs   # ${{ env.COMPONENT }}
-#          projectVersion: ${{ env.FIANU_ARTIFACT_VERSION }}
 
