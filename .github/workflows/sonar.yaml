@@ -58,6 +58,7 @@ jobs:
           echo "GITHUB_SHA=$GITHUB_SHA" >> $GITHUB_ENV
           echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" >> $GITHUB_ENV
           echo "GITHUB_SERVER_URL=$GITHUB_SERVER_URL" >> $GITHUB_ENV
+          echo "GITHUB_REPOSITORY_ID=$GITHUB_REPOSITORY_ID" >> $GITHUB_ENV
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
