@@ -65,7 +65,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: http://sonarqube.sonarqube.35.232.161.16.sslip.io
           PROJECT_KEY: ${{ env.GITHUB_REPOSITORY_ID }}
-          PROJECT_NAME: aesthetic change
+          PROJECT_NAME: aesthetic_change
         with:
           args: >
             -Dsonar.sources=.
