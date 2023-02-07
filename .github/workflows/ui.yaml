@@ -13,6 +13,7 @@ env:
   FIANU_VERSION: ${{ secrets.FIANU_VERSION }}
   FIANU_HOST: ${{ secrets.FIANU_HOST }}
   FIANU_KEY: ${{ secrets.FIANU_COSIGN_KEY }}
+  FIANU_APP_CODE: FLA
   REKOR_HOST: ${{ secrets.REKOR_URL }}
   GITHUB_CONTEXT: ${{ toJSON(github) }}
 
@@ -45,6 +46,7 @@ jobs:
         run: |-
           fianu session start
         env:
+          FIANU_APP_CODE: ${{ env.FIANU_APP_CODE }}
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
