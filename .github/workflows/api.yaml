@@ -43,7 +43,7 @@ jobs:
 
       - name: Capture
         run: |-
-          fianu session start --app FLA
+          fianu session start --app SW10000
         env:
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
