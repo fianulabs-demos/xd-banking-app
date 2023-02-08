@@ -160,7 +160,7 @@ jobs:
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
-          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source cli
+          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source rapidscan
 
       - name: Mock Capture Lacework Inline Scan
         env:
@@ -183,15 +183,25 @@ jobs:
         with:
           cosign-release: 'v1.11.0'
 
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v0.4.0'
+        with:
+          workload_identity_provider: 'projects/945078009667/locations/global/workloadIdentityPools/cipipeline/*'
+          service_account: 'fianu-workload-verifier@fianu-368901.iam.gserviceaccount.com'
+
       - name: Publish Artifact Image
         env:
+          COSIGN_EXPERIMENTAL: 1
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
           docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION
+          
+          cosign initialize --mirror $FIANU_HOST/ledger/root --root $FIANU_HOST/ledger/root/root.json
 
-          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --rekor-url $FIANU_HOST --oidc-provider google-workload-identity --fulcio-url $FIANU_HOST/ledger/fulcio "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
           cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
 
           cosign generate -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
