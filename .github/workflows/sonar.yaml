@@ -2,7 +2,7 @@ name: CI Pipeline Sonar Scan
 
 on:
   push:
-    branches: [ main ]
+    branches: [ none ]
 
 defaults:
   run:
