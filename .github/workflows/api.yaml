@@ -190,9 +190,9 @@ jobs:
         name: 'Authenticate to Google Cloud'
         uses: 'google-github-actions/auth@v1'
         with:
-          id_token_audience: 'iam.googleapis.com'/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
+          id_token_audience: 'iam.googleapis.com/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
           token_format: id_token
-          workload_identity_provider: 'iam.googleapis.com'/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
+          workload_identity_provider: 'iam.googleapis.com/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
           service_account: 'fianu-workload-verifier@fianu-368901.iam.gserviceaccount.com'
 
       - name: Sign Artifact Image
