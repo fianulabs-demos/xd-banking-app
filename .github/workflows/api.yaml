@@ -208,7 +208,7 @@ jobs:
           gcloud auth configure-docker
 
           cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --rekor-url $FIANU_HOST --identity-token=${{ steps.auth.outputs.id_token }} --force --fulcio-url $FIANU_HOST/ledger/fulcio "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
-          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+          cosign verify --rekor-url $FIANU_HOST --certificate-identity fianu-workloads@fianu-368901.iam.gserviceaccount.com --certificate-oidc-issuer https://accounts.google.com
 
           cosign generate -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
 
