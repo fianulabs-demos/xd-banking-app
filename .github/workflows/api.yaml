@@ -191,7 +191,7 @@ jobs:
         uses: 'google-github-actions/auth@v1'
         with:
           token_format: id_token
-          id_token_audience: 'iam.googleapis.com/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
+          id_token_audience: 'sigstore'
           workload_identity_provider: 'projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
           service_account: 'fianu-workloads@fianu-368901.iam.gserviceaccount.com'
 
@@ -204,7 +204,7 @@ jobs:
         run: |-
           cosign initialize --mirror $FIANU_HOST/ledger/root --root $FIANU_HOST/ledger/root/root.json
 
-          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --rekor-url $FIANU_HOST --identity-token=$(gcloud auth print-identity-token --audiences=sigstore) --fulcio-url $FIANU_HOST/ledger/fulcio "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
+          cosign sign -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --rekor-url $FIANU_HOST --identity-token=${{ steps.auth.outputs.id_token }} --fulcio-url $FIANU_HOST/ledger/fulcio "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
           cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
 
           cosign generate -a version=$FIANU_ARTIFACT_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_ARTIFACT_VERSION"
