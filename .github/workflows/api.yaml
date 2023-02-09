@@ -193,7 +193,7 @@ jobs:
           id_token_audience: 'https://iam.googleapis.com/projects/945078009667/locations/global/workloadIdentityPools/cipipeline/providers/github'
           token_format: id_token
           workload_identity_provider: 'projects/945078009667/locations/global/workloadIdentityPools/cipipeline/github'
-          service_account: 'fianu-workload-verifier@fianu-368901.iam.gserviceaccount.com'
+          service_account: 'fianu-workloads@fianu-368901.iam.gserviceaccount.com'
 
       - name: Sign Artifact Image
         env:
