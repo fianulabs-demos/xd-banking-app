@@ -188,7 +188,7 @@ jobs:
 
       - id: 'auth'
         name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v0.4.0'
+        uses: 'google-github-actions/auth@v1'
         with:
           workload_identity_provider: 'projects/945078009667/locations/global/workloadIdentityPools/cipipeline/*'
           service_account: 'fianu-workload-verifier@fianu-368901.iam.gserviceaccount.com'
