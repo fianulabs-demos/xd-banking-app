@@ -2,7 +2,7 @@ name: CI Pipeline Build UI
 
 on:
   push:
-    branches: [ none ]
+    branches: [ main ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Capture
         run: |-
-          fianu session start
+          fianu session start --app DBX
         env:
           FIANU_APP_CODE: ${{ env.FIANU_APP_CODE }}
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
