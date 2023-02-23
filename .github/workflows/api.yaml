@@ -130,7 +130,7 @@ jobs:
 
           curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
 
-          horusec start -p="./" -o json -O sast.horusec.report.json
+          horusec start -p="./" -o sarif -O sast.horusec.report.json
 
           fianu capture artifact --input sast.horusec.report.json --type sast --source cli
 
