@@ -160,7 +160,7 @@ jobs:
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
-          fianu capture artifact --input synopsys_blackduck.json --type blackduck --source rapidscan
+          fianu capture artifact --input synopsys_blackduck.json --consolidate --type blackduck --source rapidscan
 
       - name: Mock Capture Lacework Inline Scan
         env:
