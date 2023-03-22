@@ -2,7 +2,7 @@ name: CI SAST Scan
 
 on:
   push:
-    branches: [ test ]
+    branches: [ main ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
