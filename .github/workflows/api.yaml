@@ -43,7 +43,7 @@ jobs:
 
       - name: Capture
         run: |-
-          fianu session start --app SW10000
+          fianu session start --app SW10000 -d
         env:
           FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
@@ -203,7 +203,7 @@ jobs:
           FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
-          cosign initialize --mirror $FIANU_HOST/ledger/root --root $FIANU_HOST/ledger/root/root.json
+          cosign initialize --mirror $FIANU_HOST/ledger/tuf --root $FIANU_HOST/ledger/tuf/root.json
 
           gcloud auth configure-docker
 
