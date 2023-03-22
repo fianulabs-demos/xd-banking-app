@@ -244,11 +244,3 @@ jobs:
           FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |-
           fianu capture artifact --input sbom.spdx.json --type sbom --source cli
-
-      - name: Close Session
-        env:
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |-
-          fianu session close
