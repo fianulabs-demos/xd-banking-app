@@ -24,7 +24,6 @@ jobs:
     with:
       app-code: SOX
       fianu-artifact: fianu
-      working-directory: ./xd-banking-ui
 
   prepare:
     name: Run Preparation
