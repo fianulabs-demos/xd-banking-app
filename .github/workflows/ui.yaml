@@ -45,6 +45,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [ prepare ]
+    defaults:
+      run:
+        working-directory: ./xd-banking-ui
 
     permissions:
       contents: 'read'
@@ -76,7 +79,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - run: cd xd-banking-ui && npm install
+      - run: npm install
 
       - name: Build and Publish
         run: |-
