@@ -13,7 +13,6 @@ env:
   REPOSITORY: badgercorp # TODO: update to Artifact Registry docker repository
   GOPRIVATE: github.com/fianulabs/*
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-  VERSION: 1.0.10
   FIANU_ARTIFACT_NAME: fianu
 
 jobs:
@@ -22,7 +21,7 @@ jobs:
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
     secrets: inherit
     with:
-      app-code: SOX
+      app-code: SW11094
       fianu-artifact: fianu
 
   prepare:

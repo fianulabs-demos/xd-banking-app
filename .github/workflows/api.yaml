@@ -21,7 +21,7 @@ jobs:
       id-token: write
       contents: read
     with:
-      app-code: DBX
+      app-code: SW11094
       artifact-name: xd-banking-api
       artifact-version: 1.0.0
       working-directory: ./xd-banking-api
