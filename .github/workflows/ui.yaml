@@ -21,8 +21,8 @@ jobs:
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
     secrets: inherit
     with:
-      app-code: SW11094
-      fianu-artifact: fianu
+      app-code: SW13172
+      fianu-artifact: xd-banking-ui
 
   prepare:
     name: Run Preparation

@@ -14,14 +14,14 @@ env:
 
 jobs:
   consulta:
-    name: Digital Wallet
+    name: XD Banking API
     uses: fianulabs/tools/.github/workflows/golang_pipeline.yaml@main
     secrets: inherit
     permissions:
       id-token: write
       contents: read
     with:
-      app-code: SW11094
+      app-code: SW13172
       artifact-name: xd-banking-api
       artifact-version: 1.0.0
       working-directory: ./xd-banking-api
