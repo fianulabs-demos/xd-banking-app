@@ -65,8 +65,6 @@ jobs:
       - name: Install GPG Keys 5db6d591-1664-4661-adde-2c06b3605228
         run: |
           cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --import --batch
-          gpg --export > /home/runner/.gnupg/pubring.gpg
-          gpg --export-secret-keys > /home/runner/.gnupg/secring.gpg
 
       - name: Package + Sign Charts
         run: |
