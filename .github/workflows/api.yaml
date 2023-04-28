@@ -82,7 +82,9 @@ jobs:
         run: |
           for chart in `find . -name '*.tgz' -print`; do
             jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}
-            jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}.prov
+          done
+          for chart in `find . -name '*.tgz.prov' -print`; do
+            jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}
           done
           
 
