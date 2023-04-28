@@ -93,6 +93,6 @@ jobs:
       - name: Capture Chart Evidence
         run: |
           for chart in `find . -name '*.tgz' -print`; do
-            fianu generate helm --repo ${{ secrets.JF_URL }}/artifactory/investments-unlimited --path default/xd-banking --chart ${chart} > helm.json
+            fianu generate helm --repo ${{ secrets.JF_URL }}/artifactory/investments-unlimited --path default/xd-banking --artifact ${chart} > helm.json
             fianu capture artifact --input helm.json --type helm --source package
           done
