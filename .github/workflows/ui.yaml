@@ -82,6 +82,27 @@ jobs:
 
       - run: npm install
 
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        id: cypress
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+          working-directory: xd-banking-ui
+          install: false
+          record: true
+          command: npm run test:e2e:ci
+
+      - env:
+          FIANU_ARTIFACT: ${{ needs.prepare.outputs.artifact-name }}
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+          FIANU_HOST: ${{ secrets.FIANU_HOST }}
+        run: |-
+          fianu capture artifact --input cypress/results/mochawesome.json --type testing --source cli
+
       - name: Build and Publish
         id: digest
         run: |-
