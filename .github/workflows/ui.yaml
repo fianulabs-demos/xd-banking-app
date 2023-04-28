@@ -13,7 +13,7 @@ env:
   REPOSITORY: badgercorp # TODO: update to Artifact Registry docker repository
   GOPRIVATE: github.com/fianulabs/*
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-  FIANU_ARTIFACT_NAME: fianu
+  FIANU_ARTIFACT_NAME: xd-banking-ui
 
 jobs:
   fianu:
