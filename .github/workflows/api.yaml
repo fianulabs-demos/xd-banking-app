@@ -83,6 +83,12 @@ jobs:
             jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}
             jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}.prov
           done
+          
+
+      - name: setup fianu
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
 
       - name: Capture Chart Evidence
         run: |
