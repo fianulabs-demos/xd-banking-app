@@ -61,13 +61,13 @@ jobs:
       - name: Install sigstore Helm plugin
         run: |
           helm plugin install https://github.com/sigstore/helm-sigstore
-          
-      - name: Install GPG Keys 5db6d591-1664-4661-adde-2c06b3605228
-        run: |
-          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --import --batch
-          gpg --export > /home/runner/.gnupg/pubring.gpg
-          gpg --list-secret-keys
-          gpg --export-secret-keys cipipeline > /home/runner/.gnupg/secring.gpg
+
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
 
       - name: Package + Sign Charts
         run: |
