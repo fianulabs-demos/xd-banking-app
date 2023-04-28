@@ -75,7 +75,7 @@ jobs:
 
       - name: Package + Sign Charts
         run: |
-          helm package charts/xd-banking-app --sign --key "${{ secrets.GPG_KEY_NAME }}"
+          helm package charts/xd-banking-app --sign --key "${{ secrets.GPG_KEY_NAME }}" --keyring /home/runner/.gnupg/secring.gpg
 
       - name: Upload Charts to Artifactory
         run: |
