@@ -69,6 +69,11 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
 
+      - name: Setup GPG Keys
+        run: |
+          gpg --export > /home/runner/.gnupg/pubring.gpg
+          gpg --export-secret-keys > /home/runner/.gnupg/secring.gpg
+
       - name: Package + Sign Charts
         run: |
           helm package charts/xd-banking-app --sign --key ${{ secrets.GPG_KEY_NAME }}
