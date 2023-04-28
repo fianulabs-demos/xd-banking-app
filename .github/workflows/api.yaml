@@ -13,21 +13,22 @@ env:
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
-#  api:
-#    name: XD Banking API
-#    uses: fianulabs/tools/.github/workflows/golang_pipeline.yaml@main
-#    secrets: inherit
-#    permissions:
-#      id-token: write
-#      contents: read
-#    with:
-#      app-code: DBX
-#      artifact-name: xd-banking-api
-#      artifact-version: 1.0.0
-#      working-directory: ./xd-banking-api
-#      build-path: ko://github.com/badgercorp/xd-banking-api/cmd/api
+  api:
+    name: XD Banking API
+    uses: fianulabs/tools/.github/workflows/golang_pipeline.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      app-code: DBX
+      artifact-name: xd-banking-api
+      artifact-version: 1.0.0
+      working-directory: ./xd-banking-api
+      build-path: ko://github.com/badgercorp/xd-banking-api/cmd/api
   package:
     runs-on: ubuntu-latest
+    needs: [ api ]
     name: Package
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +38,7 @@ jobs:
         with:
           valueFile: 'charts/xd-banking-app/values.yaml'
           propertyPath: 'image.tag'
-          value: 0.0.1
+          value: ${{ needs.api.outputs.digest }}
           commitChange: false
 
       - uses: jfrog/setup-jfrog-cli@v3

@@ -43,9 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     needs: [ prepare ]
-    defaults:
-      run:
-        working-directory: ./xd-banking-ui
+
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
 
     permissions:
       contents: 'read'
@@ -80,11 +80,16 @@ jobs:
       - run: npm install
 
       - name: Build and Publish
+        id: digest
         run: |-
           npm run build
 
-          docker build . -t "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+          docker build . -t "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}" -t "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:latest"
           docker push "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+          docker push "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:latest"
+
+          IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}" | cut -d@ -f2)
+          echo "digest=$IMAGE_DIGEST" >> $GITHUB_OUTPUT
 
       # Get the GKE credentials so we can deploy to the cluster
       - uses: google-github-actions/get-gke-credentials@v0.2.1
@@ -99,20 +104,34 @@ jobs:
     secrets: inherit
     needs: [ prepare, container ]
     with:
-      working-directory: ./xd-banking-ui
+      working-directory: ./
       project-type: node
       fianu-artifact: ${{ needs.prepare.outputs.artifact-name }}
       artifact-name: ${{ needs.prepare.outputs.artifact-name }}
       artifact-version: ${{ needs.prepare.outputs.artifact-version }}
 
-  fianu-signed-artifact:
-    name: Fianu Signed Artifact
-    uses: fianulabs/tools/.github/workflows/artifact_signing.yaml@main
+  fianu-container-metadata:
+    name: Fianu Container Metadata Job
+    uses: fianulabs/tools/.github/workflows/container_metadata.yaml@main
     secrets: inherit
     needs: [ prepare, container ]
     permissions:
       id-token: write
       contents: read
     with:
-      working-directory: ./xd-banking-ui
+      working-directory: ./
       oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+
+  fianu-signed-artifact:
+    name: Fianu Signed Artifact
+    uses: fianulabs/tools/.github/workflows/artifact_signing.yaml@main
+    secrets: inherit
+    needs: [ prepare, container, fianu-container-metadata ]
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      working-directory: ./
+      oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+      oci-artifact-name: ${{ needs.prepare.outputs.artifact-name }}
+      oci-artifact-digest: ${{ needs.container.outputs.digest }}
