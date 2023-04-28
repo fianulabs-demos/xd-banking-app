@@ -91,6 +91,11 @@ jobs:
           version: ${{ secrets.FIANU_VERSION }}
 
       - name: Capture Chart Evidence
+        env:
+          FIANU_HOST: ${{ secrets.FIANU_HOST }}
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
         run: |
           for chart in `find . -name '*.tgz' -print`; do
             fianu generate helm --repo ${{ secrets.JF_URL }}/artifactory/investments-unlimited --path default/xd-banking --artifact ${chart} > helm.json
