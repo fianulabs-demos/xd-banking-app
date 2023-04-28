@@ -62,14 +62,11 @@ jobs:
         run: |
           helm plugin install https://github.com/sigstore/helm-sigstore
 
-      - uses: olafurpg/setup-gpg@v3
-
       - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
 
       - name: Setup GPG Keys
         run: |
