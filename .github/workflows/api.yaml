@@ -66,6 +66,8 @@ jobs:
         run: |
           cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --import --batch
           gpg --export > /home/runner/.gnupg/pubring.gpg
+          gpg --list-secret-keys
+          gpg --export-secret-keys cipipeline > /home/runner/.gnupg/secring.gpg
 
       - name: Package + Sign Charts
         run: |
