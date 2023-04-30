@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  registry: us-central1-docker.pkg.dev/fianu-368901/fianu-images/xd-banking-app
+  registry: us-central1-docker.pkg.dev/fianu-368901/fianu-images/xd-banking-api
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
