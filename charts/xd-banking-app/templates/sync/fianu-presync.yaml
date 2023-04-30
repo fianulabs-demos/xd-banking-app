@@ -116,8 +116,8 @@ spec:
           args:
             - capture
             - artifact
-            - --status=error
-            - --result=fail
+            - --status=complete
+            - --result=error
           env:
             - name: HELM_CHART_VERSION
               value: {{ .Values.runtime.revision }}
