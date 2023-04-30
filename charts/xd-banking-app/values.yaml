@@ -5,10 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: gcr.io/fianu-368901/xd-banking-api
+  repository: us-central1-docker.pkg.dev/fianu-368901/fianu-images
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: sha256:9c3458ece8d0373bbd619dc5679898ee0fcf9ccf3e972b88fb18f0d56a5b9e4d
 
 imagePullSecrets: []
 nameOverride: ""
