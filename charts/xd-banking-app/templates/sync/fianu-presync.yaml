@@ -11,56 +11,23 @@ metadata:
 spec:
   template:
     spec:
-      initContainers:
-        - name: init
-          image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
-          imagePullPolicy: Always
-          args:
-            - presync
-            - onboard
-          env:
-            - name: GIT_REVISION
-              value: {{ .Values.runtime.revision }}
-            - name: ARGOCD_SOURCE_PATH
-              value: {{ .Values.runtime.source_path }}
-            - name: FIANU_HOST
-              value: {{ .Values.fianu.host }}
-            - name: GIT_REPO_URL
-              value: {{ .Values.runtime.repo_url }}
-            - name: GIT_BRANCH
-              value: {{ .Values.runtime.branch }}
-            - name: GIT_REPO_DEPLOYMENT_TYPE
-              value: {{ .Values.runtime.repo_deployment_type }}
-            - name: FIANU_RELEASE_TARGET
-              value: {{ .Values.runtime.release_target }}
-            - name: FIANU_RELEASE_ENVIRONMENT
-              value: {{ .Values.runtime.release_environment }}
-            # TODO: hook up to secrets
-            - name: GITHUB_ACCESS_TOKEN
-              value: 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
-            - name: FIANU_USERNAME
-              value: service-account-dxcm
-            - name: FIANU_CLIENT_ID
-              value: dxcm
-            - name: FIANU_CLIENT_SECRET
-              value: Eqsr2c8LvD2IqT6njZ6pTStdelbKqQ6L
       containers:
         - name: intent
           image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
           imagePullPolicy: Always
           args:
             - capture
-            - intent
+            - artifact
+            - --status=initiated
+            - --result=inprogress
           env:
-            - name: GIT_REVISION
+            - name: HELM_CHART_VERSION
               value: {{ .Values.runtime.revision }}
-            - name: ARGOCD_SOURCE_PATH
-              value: {{ .Values.runtime.source_path }}
-            - name: ARGOCD_SOURCE_CHART
+            - name: HELM_CHART
               value: {{ .Values.runtime.chart }}
             - name: FIANU_HOST
               value: {{ .Values.fianu.host }}
-            - name: GIT_REPO_URL
+            - name: HELM_REPO_URL
               value: {{ .Values.runtime.repo_url }}
             - name: GIT_BRANCH
               value: {{ .Values.runtime.branch }}
@@ -73,8 +40,6 @@ spec:
             - name: FIANU_RELEASE_ID
               value: {{ $release_id }}
             # TODO: hook up to secrets
-            - name: GITHUB_ACCESS_TOKEN
-              value: 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
             - name: FIANU_USERNAME
               value: service-account-dxcm
             - name: FIANU_CLIENT_ID
@@ -96,22 +61,22 @@ spec:
   template:
     spec:
       containers:
-        - name: pass
+        - name: complete
           image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
           imagePullPolicy: Always
           args:
             - capture
-            - complete
+            - artifact
+            - --status=complete
+            - --result=pass
           env:
-            - name: GIT_REVISION
+            - name: HELM_CHART_VERSION
               value: {{ .Values.runtime.revision }}
-            - name: ARGOCD_SOURCE_PATH
-              value: {{ .Values.runtime.source_path }}
-            - name: ARGOCD_SOURCE_CHART
+            - name: HELM_CHART
               value: {{ .Values.runtime.chart }}
             - name: FIANU_HOST
               value: {{ .Values.fianu.host }}
-            - name: GIT_REPO_URL
+            - name: HELM_REPO_URL
               value: {{ .Values.runtime.repo_url }}
             - name: GIT_BRANCH
               value: {{ .Values.runtime.branch }}
@@ -124,8 +89,6 @@ spec:
             - name: FIANU_RELEASE_ID
               value: {{ $release_id }}
             # TODO: hook up to secrets
-            - name: GITHUB_ACCESS_TOKEN
-              value: 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
             - name: FIANU_USERNAME
               value: service-account-dxcm
             - name: FIANU_CLIENT_ID
@@ -147,22 +110,22 @@ spec:
   template:
     spec:
       containers:
-        - name: fail
+        - name: error
           image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
           imagePullPolicy: Always
           args:
             - capture
-            - error
+            - artifact
+            - --status=error
+            - --result=fail
           env:
-            - name: GIT_REVISION
+            - name: HELM_CHART_VERSION
               value: {{ .Values.runtime.revision }}
-            - name: ARGOCD_SOURCE_PATH
-              value: {{ .Values.runtime.source_path }}
-            - name: ARGOCD_SOURCE_CHART
+            - name: HELM_CHART
               value: {{ .Values.runtime.chart }}
             - name: FIANU_HOST
               value: {{ .Values.fianu.host }}
-            - name: GIT_REPO_URL
+            - name: HELM_REPO_URL
               value: {{ .Values.runtime.repo_url }}
             - name: GIT_BRANCH
               value: {{ .Values.runtime.branch }}
@@ -175,8 +138,6 @@ spec:
             - name: FIANU_RELEASE_ID
               value: {{ $release_id }}
             # TODO: hook up to secrets
-            - name: GITHUB_ACCESS_TOKEN
-              value: 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
             - name: FIANU_USERNAME
               value: service-account-dxcm
             - name: FIANU_CLIENT_ID
