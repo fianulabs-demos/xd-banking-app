@@ -125,7 +125,7 @@ func test() {
 	log.Println("test")
 }
 
-func test2() {
+func noah() {
 	log.Println("test")
 }
 
@@ -148,6 +148,6 @@ func main() {
 	log.Printf("listening on :8080\n")
 	log.Println("test")
 	test()
-	test2()
+	noah()
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, receive))
 }
