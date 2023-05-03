@@ -13,6 +13,7 @@ env:
   GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
+
   api:
     name: XD Banking API
     uses: fianulabs/tools/.github/workflows/golang_pipeline.yaml@main
@@ -26,81 +27,16 @@ jobs:
       artifact-version: 1.0.0
       working-directory: ./xd-banking-api
       build-path: ko://github.com/badgercorp/xd-banking-api/cmd/api
-  package:
-    runs-on: ubuntu-latest
+
+  stage-release:
     needs: [ api ]
-    name: Package
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Update Image Version in the related HelmChart values.yaml
-        uses: fjogeleit/yaml-update-action@main
-        with:
-          valueFile: 'charts/xd-banking-app/values.yaml'
-          propertyPath: 'image.tag'
-          value: ${{ needs.api.outputs.digest }}
-          commitChange: false
-
-      - uses: jfrog/setup-jfrog-cli@v3
-        env:
-          # JFrog platform url (for example: https://acme.jfrog.io)
-          JF_URL: ${{ secrets.JF_URL }}
-          # Basic authentication credentials
-          JF_USER: ${{ secrets.JF_USER }}
-          # JFrog Platform access token
-          JF_ACCESS_TOKEN: ${{ secrets.JF_ACCESS_TOKEN }}
-
-      - name: Set up Helm
-        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-        with:
-          version: v3.10.3
-
-      - name: Add dependency chart repos
-        run: |
-          helm repo add sigstore https://sigstore.github.io/helm-charts
-
-      - name: Install sigstore Helm plugin
-        run: |
-          helm plugin install https://github.com/sigstore/helm-sigstore
-
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-
-      - name: Setup GPG Keys
-        run: |
-          gpg --export > /home/runner/.gnupg/pubring.gpg
-          gpg --export-secret-keys > /home/runner/.gnupg/secring.gpg
-
-      - name: Package + Sign Charts
-        run: |
-          helm package charts/xd-banking-app --sign --key "${{ secrets.GPG_KEY_NAME }}" --keyring /home/runner/.gnupg/secring.gpg
-
-      - name: Upload Charts to Artifactory
-        run: |
-          for chart in `find . -name '*.tgz' -print`; do
-            jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}
-          done
-          for chart in `find . -name '*.tgz.prov' -print`; do
-            jfrog rt u ${chart} investments-unlimited/default/xd-banking/${chart}
-          done
-          
-
-      - name: setup fianu
-        uses: fianulabs/actions@main
-        with:
-          version: ${{ secrets.FIANU_VERSION }}
-
-      - name: Capture Chart Evidence
-        env:
-          FIANU_HOST: ${{ secrets.FIANU_HOST }}
-          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-        run: |
-          for chart in `find . -name '*.tgz' -print`; do
-            fianu generate helm --repo ${{ secrets.JF_URL }}/artifactory/investments-unlimited --path default/xd-banking --artifact ${chart} > helm.json
-            fianu capture artifact --input helm.json --type helm --source package
-          done
+    name: Release
+    uses: fianulabs/tools/.github/workflows/release.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      tag: ${{ needs.proxy.outputs.digest }}
+      path: envs/rnd/values-image.yaml
+      deploy: fianulabs/investments-unlimited-deploy
