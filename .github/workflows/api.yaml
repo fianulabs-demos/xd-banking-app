@@ -37,6 +37,6 @@ jobs:
       id-token: write
       contents: read
     with:
-      tag: ${{ needs.proxy.outputs.digest }}
+      tag: ${{ needs.api.outputs.digest }}
       path: envs/rnd/values-image.yaml
       deploy: fianulabs/investments-unlimited-deploy
