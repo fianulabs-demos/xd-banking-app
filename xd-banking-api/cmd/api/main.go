@@ -101,6 +101,32 @@ func test() {
 	log.Println("test")
 	log.Println("test")
 	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("noah")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+	log.Println("test")
+}
+
+func test2() {
+	log.Println("test")
 }
 
 func main() {
@@ -122,5 +148,6 @@ func main() {
 	log.Printf("listening on :8080\n")
 	log.Println("test")
 	test()
+	test2()
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, receive))
 }
