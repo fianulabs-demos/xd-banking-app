@@ -8,9 +8,21 @@ env:
   FIANU_ARTIFACT_NAME: xd-banking-ui
 
 jobs:
+  setup:
+    name: Start Fianu Pipeline Session
+    uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      app-code: dbx
+      fianu-artifact: xd-banking-ui
+
   prepare:
     name: Run Preparation
     runs-on: ubuntu-latest
+    needs: [ setup ]
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.ARTIFACT_NAME }}
       artifact-version: ${{ steps.set-outputs.outputs.ARTIFACT_VERSION }}
@@ -19,7 +31,7 @@ jobs:
         id: set-outputs
         run: |-
           echo "ARTIFACT_NAME=${{ env.FIANU_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
-          echo "ARTIFACT_VERSION=${{ needs.fianu.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_VERSION=${{ needs.setup.outputs.version }}" >> $GITHUB_OUTPUT
 
   container:
     name: Setup, Build, Publish, and Deploy
