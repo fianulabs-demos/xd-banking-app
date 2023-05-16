@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  ARTIFACT_NAME: xd-banking-app
+
 jobs:
   install:
     name: Tool Installation
@@ -16,6 +19,7 @@ jobs:
 
   setup:
     name: Start Fianu Pipeline Session
+    needs: [ install ]
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
     secrets: inherit
     permissions:
@@ -36,8 +40,8 @@ jobs:
       - name: Outputs
         id: set-outputs
         run: |-
-          echo "ARTIFACT_NAME=${{ env.FIANU_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
-          echo "ARTIFACT_VERSION=${{ needs.fianu.outputs.version }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_VERSION=${{ needs.setup.outputs.version }}" >> $GITHUB_OUTPUT
 
   codescan:
     name: Sonarqube Codescan
