@@ -72,11 +72,11 @@ jobs:
   sbom:
     name: Syft
     uses: fianulabs/tools/.github/workflows/syft.yaml@main
-    needs: [ container ]
+    needs: [ container, variables ]
     secrets: inherit
     with:
       working-directory: ./xd-banking-api
-      oci-artifact: ${{ needs.container.outputs.name }}
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
       identifier: xd-banking-api
 
   sbom-evidence-capture:
@@ -178,7 +178,7 @@ jobs:
     name: Cosign
     uses: fianulabs/tools/.github/workflows/cosign.yaml@main
     secrets: inherit
-    needs: [ container, variables ]
+    needs: [ container, sbom, variables ]
     permissions:
       id-token: write
       contents: read
