@@ -75,7 +75,7 @@ jobs:
     needs: [ container ]
     secrets: inherit
     with:
-      working-directory: ${{ needs.container.outputs.name }}
+      working-directory: ./xd-banking-api
       oci-artifact: ${{ needs.container.outputs.name }}
       identifier: xd-banking-app
 
@@ -179,6 +179,9 @@ jobs:
     uses: fianulabs/tools/.github/workflows/cosign.yaml@main
     secrets: inherit
     needs: [ container, variables ]
+    permissions:
+      id-token: write
+      contents: read
     with:
       working-directory: ./xd-banking-app
       oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
