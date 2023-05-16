@@ -13,8 +13,6 @@ jobs:
         with:
           version: ${{ secrets.FIANU_VERSION }}
 
-      - name: start fianu session
-
   setup:
     name: Start Fianu Pipeline Session
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
