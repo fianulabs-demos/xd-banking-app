@@ -8,10 +8,6 @@ env:
   ARTIFACT_NAME: xd-banking-api
 
 jobs:
-  install:
-    name: Tool Installation
-    runs-on: ubuntu-latest
-
   setup:
     name: Start Fianu Pipeline Session
     needs: [ install ]
