@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 env:
-  ARTIFACT_NAME: xd-banking-app
+  ARTIFACT_NAME: xd-banking-api
 
 jobs:
   install:
@@ -27,7 +27,7 @@ jobs:
       contents: read
     with:
       app-code: dbx
-      fianu-artifact: xd-banking-app
+      fianu-artifact: xd-banking-api
 
   variables:
     name: Set Runtime Variables
@@ -77,7 +77,7 @@ jobs:
     with:
       working-directory: ./xd-banking-api
       oci-artifact: ${{ needs.container.outputs.name }}
-      identifier: xd-banking-app
+      identifier: xd-banking-api
 
   sbom-evidence-capture:
     name: Capture SBOM Evidence
@@ -87,7 +87,7 @@ jobs:
       - name: Download SBOM Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.syft.outputs.sbom}}_xd-banking-app
+          name: ${{needs.syft.outputs.sbom}}_xd-banking-api
 
       - name: Capture
         env:
@@ -101,7 +101,7 @@ jobs:
     secrets: inherit
     needs: [ container ]
     with:
-      working-directory: ./xd-banking-app
+      working-directory: ./xd-banking-api
       project-type: golang
       go-version: 1.18
 
@@ -127,7 +127,7 @@ jobs:
     secrets: inherit
     needs: [ container ]
     with:
-      working-directory: ./xd-banking-app
+      working-directory: ./xd-banking-api
       project-type: golang
       go-version: 1.18
 
@@ -156,7 +156,7 @@ jobs:
       artifact-version: ${{ needs.variables.outputs.artifact-version }}
       working-directory: ./xd-banking-api
       artifact-name: ${{ needs.variables.outputs.artifact-name }}
-      identifier: xd-banking-app
+      identifier: xd-banking-api
 
   containerscan-evidence-capture:
     name: Capture Containerscan Evidence
@@ -166,7 +166,7 @@ jobs:
       - name: Download SBOM Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.containerscan.outputs.lacework}}_xd-banking-app
+          name: ${{needs.containerscan.outputs.lacework}}_xd-banking-api
 
       - name: Capture
         env:
@@ -183,11 +183,11 @@ jobs:
       id-token: write
       contents: read
     with:
-      working-directory: ./xd-banking-app
+      working-directory: ./xd-banking-api
       oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
       oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
-      identifier: xd-banking-app
+      identifier: xd-banking-api
 
   cosign-evidence-capture:
     name: Capture Signed Artifact Evidence
@@ -197,7 +197,7 @@ jobs:
       - name: Download Cosign Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.cosign.outputs.signature}}_xd-banking-app
+          name: ${{needs.cosign.outputs.signature}}_xd-banking-api
 
       - name: Capture
         env:
