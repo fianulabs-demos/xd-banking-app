@@ -10,7 +10,6 @@ env:
 jobs:
   setup:
     name: Start Fianu Pipeline Session
-    needs: [ install ]
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
     secrets: inherit
     permissions:
