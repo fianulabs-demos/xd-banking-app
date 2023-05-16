@@ -16,7 +16,7 @@ jobs:
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
     secrets: inherit
     with:
-      app-code: SW13172
+      app-code: dbx
       fianu-artifact: xd-banking-ui
 
   prepare:
