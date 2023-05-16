@@ -73,6 +73,13 @@ jobs:
     name: Capture SBOM Evidence
     runs-on: ubuntu-latest
     needs: [ sbom ]
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
       - name: setup fianu cli
         uses: fianulabs/actions@main
@@ -104,6 +111,13 @@ jobs:
     name: Capture SAST Evidence
     runs-on: ubuntu-latest
     needs: [ sast ]
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
       - name: setup fianu cli
         uses: fianulabs/actions@main
@@ -135,6 +149,13 @@ jobs:
     name: Capture Containerscan Evidence
     runs-on: ubuntu-latest
     needs: [ sca ]
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
       - name: setup fianu cli
         uses: fianulabs/actions@main
@@ -167,6 +188,13 @@ jobs:
     name: Capture Containerscan Evidence
     runs-on: ubuntu-latest
     needs: [ containerscan ]
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
       - name: setup fianu cli
         uses: fianulabs/actions@main
@@ -203,6 +231,13 @@ jobs:
     name: Capture Signed Artifact Evidence
     runs-on: ubuntu-latest
     needs: [ cosign ]
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
       - name: setup fianu cli
         uses: fianulabs/actions@main
