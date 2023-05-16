@@ -83,7 +83,7 @@ jobs:
       - name: Download SBOM Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.syft.outputs.sbom}}-xd-banking-app
+          name: ${{needs.syft.outputs.sbom}}_xd-banking-app
 
       - name: Capture
         env:
@@ -100,7 +100,6 @@ jobs:
       working-directory: ./xd-banking-app
       project-type: golang
       go-version: 1.18
-      identifier: xd-banking-app
 
   sast-evidence-capture:
     name: Capture SAST Evidence
@@ -110,7 +109,7 @@ jobs:
       - name: Download SAST Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.sast.outputs.snyk}}-xd-banking-app
+          name: ${{needs.sast.outputs.snyk}}_golang
 
       - name: Capture
         env:
@@ -137,7 +136,7 @@ jobs:
       - name: Download SBOM Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.sca.outputs.snyk}}-xd-banking-app
+          name: ${{needs.sca.outputs.snyk}}_xd-banking-app
 
       - name: Capture
         env:
@@ -164,7 +163,7 @@ jobs:
       - name: Download SBOM Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.containerscan.outputs.lacework}}-xd-banking-app
+          name: ${{needs.containerscan.outputs.lacework}}_xd-banking-app
 
       - name: Capture
         env:
@@ -192,7 +191,7 @@ jobs:
       - name: Download Cosign Results
         uses: actions/download-artifact@v3
         with:
-          name: ${{needs.cosign.outputs.signature}}-xd-banking-app
+          name: ${{needs.cosign.outputs.signature}}_xd-banking-app
 
       - name: Capture
         env:
