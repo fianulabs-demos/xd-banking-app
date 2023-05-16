@@ -4,4 +4,3 @@ Demo Bancorp Application
 
 --
 
-d
