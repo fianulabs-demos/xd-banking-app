@@ -88,7 +88,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture evidence --type sbom --source cli --input sbom.spdx.json
+          fianu capture artifact --type sbom --source cli --input sbom.spdx.json
 
   sast:
     name: SAST
@@ -119,7 +119,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture evidence --input snyk_sast.json --type snyk --source sast --resource-uri https://app.snyk.io
+          fianu capture artifact --input snyk_sast.json --type snyk --source sast --resource-uri https://app.snyk.io
 
   sca:
     name: Software Composition Analysis
@@ -150,7 +150,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture evidence --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
+          fianu capture artifact --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
 
   containerscan:
     name: Lacework
@@ -182,7 +182,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture evidence --type lacework --source inlinescan --resource-uri https://${{ secrets.LW_ACCOUNT_NAME }}.lacework.io --input lacework.json
+          fianu capture artifact --type lacework --source inlinescan --resource-uri https://${{ secrets.LW_ACCOUNT_NAME }}.lacework.io --input lacework.json
 
   cosign:
     name: Cosign
