@@ -1,3 +1,7 @@
+on:
+  push:
+    branches: [ none ]
+
 env:
   FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
   FIANU_HOST: ${{ secrets.FIANU_HOST }}

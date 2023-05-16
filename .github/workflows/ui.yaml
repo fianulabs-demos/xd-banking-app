@@ -2,7 +2,7 @@ name: CI Pipeline Build UI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ t ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
@@ -14,7 +14,6 @@ jobs:
   fianu:
     name: Fianu Pipeline Setup
     uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
-    runs-on: ubuntu-latest
     secrets: inherit
     with:
       app-code: dbx
