@@ -2,7 +2,11 @@ name: XD Banking App CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    tags:
+      - '**'
+      - '*'
 
 env:
   ARTIFACT_NAME: xd-banking-api

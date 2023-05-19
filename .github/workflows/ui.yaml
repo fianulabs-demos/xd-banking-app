@@ -2,7 +2,12 @@ name: CI Pipeline Build UI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    tags:
+      - '**'
+      - '*'
+
 
 env:
   FIANU_ARTIFACT_NAME: xd-banking-ui
