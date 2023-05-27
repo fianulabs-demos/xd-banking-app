@@ -235,6 +235,7 @@ jobs:
   sbom-from-source-as-blob:
     name: SBOM From Source as Blob
     uses: fianulabs/tools/.github/workflows/sbom_from_source_as_blob.yaml@main
+    needs: [ variables ]
     secrets: inherit
     permissions:
       id-token: write
@@ -249,14 +250,14 @@ jobs:
     name: Sbom Container Attestations
     uses: fianulabs/tools/.github/workflows/container_attestations.yaml@main
     secrets: inherit
-    needs: [ container ]
+    needs: [ container, variables ]
     permissions:
       id-token: write
       contents: read
     with:
       working-directory: ./xd-banking-api
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
-      oci-artifact: "${{ inputs.artifact-name }}:${{ inputs.artifact-version }}"
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
 
   cosign-evidence-capture:
     name: Capture Signed Artifact Evidence
