@@ -99,7 +99,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture artifact --type sbom --source cli --input sbom.spdx.json
+          fianu capture evidence --type sbom --source cli --input sbom.spdx.json
 
   sast:
     name: SAST
@@ -137,7 +137,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture artifact --input snyk_sast.json --type snyk --source sast --resource-uri https://app.snyk.io
+          fianu capture evidence --input snyk_sast.json --type snyk --source sast --resource-uri https://app.snyk.io
 
   sca:
     name: Software Composition Analysis
@@ -175,7 +175,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture artifact --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
+          fianu capture evidence --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
 
   containerscan:
     name: Lacework
@@ -214,7 +214,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture artifact --type lacework --source inlinescan --resource-uri https://${{ secrets.LW_ACCOUNT_NAME }}.lacework.io --input lacework.json
+          fianu capture evidence --type lacework --source inlinescan --resource-uri https://${{ secrets.LW_ACCOUNT_NAME }}.lacework.io --input lacework.json
 
   cosign:
     name: Cosign
@@ -230,6 +230,33 @@ jobs:
       oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
       identifier: xd-banking-api
+      
+      
+  sbom-from-source-as-blob:
+    name: SBOM From Source as Blob
+    uses: fianulabs/tools/.github/workflows/sbom_from_source_as_blob.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
+      oci-artifact-version: ${{ needs.variables.outputs.artifact-version }}
+
+  container-attestations:
+    name: Sbom Container Attestations
+    uses: fianulabs/tools/.github/workflows/container_attestations.yaml@main
+    secrets: inherit
+    needs: [ container ]
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oci-artifact: "${{ inputs.artifact-name }}:${{ inputs.artifact-version }}"
 
   cosign-evidence-capture:
     name: Capture Signed Artifact Evidence
@@ -257,8 +284,8 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu capture artifact --input cosign.json --type cosign --source container
-          fianu capture artifact --input cosign.json --type cosign --source sbom
+          fianu capture evidence --input cosign.json --type cosign --source container
+          fianu capture evidence --input cosign.json --type cosign --source sbom
 
   stage-release:
     needs: [ container ]
