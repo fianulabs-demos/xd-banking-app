@@ -179,7 +179,7 @@ jobs:
 
   containerscan:
     name: Lacework
-    uses: fianulabs/tools/.github/workflows/lacework.yaml@main
+    uses: fianulabs/tools/.github/workflows/containerscan.yaml@main
     secrets: inherit
     needs: [ container, variables ]
     with:
