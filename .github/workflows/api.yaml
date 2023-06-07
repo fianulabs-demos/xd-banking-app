@@ -2,8 +2,6 @@ name: XD Banking App CI Pipeline
 
 on:
   push:
-    branches:
-      - main
     tags:
       - '**'
       - '*'
