@@ -206,11 +206,13 @@ jobs:
           version: ${{ secrets.FIANU_VERSION }}
 
       - name: Download SBOM Results
+        if: false
         uses: actions/download-artifact@v3
         with:
           name: ${{needs.containerscan.outputs.lacework}}_xd-banking-api
 
       - name: Capture
+        if: false
         env:
           source: env-vars.yml
         run: |-
