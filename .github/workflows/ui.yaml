@@ -5,7 +5,8 @@ on:
     tags:
       - '**'
       - '*'
-
+    branches:
+      - main
 
 env:
   FIANU_ARTIFACT_NAME: xd-banking-ui

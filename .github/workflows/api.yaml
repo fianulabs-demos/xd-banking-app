@@ -5,6 +5,8 @@ on:
     tags:
       - '**'
       - '*'
+    branches:
+      - main
 
 env:
   ARTIFACT_NAME: xd-banking-api
