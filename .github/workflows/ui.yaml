@@ -50,8 +50,10 @@ jobs:
       digest: ${{ steps.digest.outputs.digest }}
 
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
 
     strategy:
       matrix:
@@ -145,7 +147,9 @@ jobs:
     needs: [ prepare, container ]
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-ui
       oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
@@ -157,7 +161,9 @@ jobs:
     needs: [ prepare, container, fianu-container-metadata ]
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-ui
       oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"

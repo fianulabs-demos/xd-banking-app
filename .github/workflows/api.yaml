@@ -43,7 +43,9 @@ jobs:
     secrets: inherit
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       build-version: ${{ needs.variables.outputs.artifact-version }}
       working-directory: ./xd-banking-api
@@ -56,7 +58,9 @@ jobs:
     secrets: inherit
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       build-version: ${{ needs.variables.outputs.artifact-version }}
       working-directory: ./xd-banking-api
@@ -223,7 +227,9 @@ jobs:
     needs: [ container, sbom, variables ]
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-api
       oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
@@ -239,7 +245,9 @@ jobs:
     secrets: inherit
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-api
       oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
@@ -253,7 +261,9 @@ jobs:
     needs: [ container, variables ]
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-api
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
@@ -295,7 +305,9 @@ jobs:
     secrets: inherit
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      packages: write
+      actions: write
     with:
       tag: ${{ needs.container.outputs.digest }}
       path: envs/rnd/values-image.yaml
