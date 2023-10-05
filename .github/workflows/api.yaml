@@ -293,7 +293,6 @@ jobs:
       oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
       oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
       oci-artifact-version: ${{ needs.variables.outputs.artifact-version }}
-      oidc
 
   container-attestations:
     name: Sbom Container Attestations
