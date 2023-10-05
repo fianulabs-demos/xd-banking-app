@@ -133,6 +133,11 @@ jobs:
     uses: fianulabs/tools/.github/workflows/security.yaml@main
     secrets: inherit
     needs: [ prepare, container ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
     with:
       working-directory: ./xd-banking-ui
       project-type: node
