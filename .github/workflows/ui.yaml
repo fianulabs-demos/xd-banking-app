@@ -12,17 +12,6 @@ env:
   FIANU_ARTIFACT_NAME: xd-banking-ui
 
 jobs:
-  setup:
-    name: Start Fianu Pipeline Session
-    uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
-    secrets: inherit
-    permissions:
-      id-token: write
-      contents: read
-    with:
-      app-code: dbx
-      fianu-artifact: xd-banking-ui
-
   prepare:
     name: Run Preparation
     runs-on: ubuntu-latest
@@ -174,3 +163,4 @@ jobs:
       oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
       oci-artifact-name: ${{ needs.prepare.outputs.artifact-name }}
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oidc-audience: 'sigstore'

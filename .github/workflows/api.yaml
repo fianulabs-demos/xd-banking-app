@@ -22,6 +22,7 @@ jobs:
     with:
       app-code: dbx
       fianu-artifact: xd-banking-api
+      base-commit: 4c98f4e2d0e1ad9e4ad92fa09120b6bf6dab64ce
 
   variables:
     name: Set Runtime Variables
