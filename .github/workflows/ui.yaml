@@ -12,9 +12,22 @@ env:
   FIANU_ARTIFACT_NAME: xd-banking-ui
 
 jobs:
+  setup:
+    name: Start Fianu Pipeline Session
+    uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      app-code: dbx
+      fianu-artifact: xd-banking-ui
+      base-commit: 676424965f0be5a30d65aaec0201690edce14450
+
   prepare:
     name: Run Preparation
     runs-on: ubuntu-latest
+    needs: [ setup ]
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.ARTIFACT_NAME }}
       artifact-version: ${{ steps.set-outputs.outputs.ARTIFACT_VERSION }}
