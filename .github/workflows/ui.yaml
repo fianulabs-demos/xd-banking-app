@@ -22,7 +22,7 @@ jobs:
     with:
       app-code: dbx
       fianu-artifact: xd-banking-ui
-      base-commit: 676424965f0be5a30d65aaec0201690edce14450
+      base-commit: a294caa465f80ed93a8e5df7942081c9c30136d3
 
   prepare:
     name: Run Preparation
@@ -175,4 +175,5 @@ jobs:
       oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
       oci-artifact-name: ${{ needs.prepare.outputs.artifact-name }}
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oci-artifact-tag: ${{ needs.prepare.outputs.artifact-version }}
       oidc-audience: 'sigstore'
