@@ -1,177 +1,361 @@
-name: CI Pipeline Build API
+name: XD Banking App CI Pipeline
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - '**'
+      - '*'
+    branches:
+      - main
 
 env:
-  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-  GKE_CLUSTER: fianu-prod  # TODO: update to cluster name
-  GKE_ZONE: us-central1-c   # TODO: update to cluster zone
-  DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
-  FIANU_ARTIFACT: xd-banking-api
-  FIANU_VERSION: ${{ secrets.FIANU_VERSION }}
-  FIANU_HOST: ${{ secrets.FIANU_HOST }}
-  FIANU_KEY: ${{ secrets.FIANU_COSIGN_KEY }}
-  REKOR_HOST: ${{ secrets.REKOR_URL }}
-  GITHUB_CONTEXT: ${{ toJSON(github) }}
-
-defaults:
-  run:
-    working-directory: ./xd-banking-api
+  ARTIFACT_NAME: xd-banking-api
 
 jobs:
+  setup:
+    name: Start Fianu Pipeline Session
+    uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      app-code: dbx
+      fianu-artifact: xd-banking-api
+      base-commit: a294caa465f80ed93a8e5df7942081c9c30136d3
 
-  init:
+  variables:
+    name: Set Runtime Variables
     runs-on: ubuntu-latest
-
+    needs: [ setup ]
+    outputs:
+      artifact-name: ${{ steps.set-outputs.outputs.ARTIFACT_NAME }}
+      artifact-version: ${{ steps.set-outputs.outputs.ARTIFACT_VERSION }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+      - name: Outputs
+        id: set-outputs
+        run: |-
+          echo "ARTIFACT_NAME=${{ env.ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_VERSION=${{ needs.setup.outputs.version }}" >> $GITHUB_OUTPUT
 
-      - name: setup fianu
+  codescan:
+    name: Sonarqube Codescan
+    uses: fianulabs/tools/.github/workflows/codescan.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      build-version: ${{ needs.variables.outputs.artifact-version }}
+      working-directory: ./xd-banking-api
+      artifact-name: ${{ needs.variables.outputs.artifact-name }}
+
+  container:
+    name: Build Container
+    uses: fianulabs/tools/.github/workflows/container_build.yaml@main
+    needs: [ variables ]
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      build-version: ${{ needs.variables.outputs.artifact-version }}
+      working-directory: ./xd-banking-api
+      artifact-name: ${{ needs.variables.outputs.artifact-name }}
+      build-path: ko://github.com/badgercorp/xd-banking-api/cmd/api
+
+  sbom:
+    name: Syft
+    uses: fianulabs/tools/.github/workflows/syft.yaml@main
+    needs: [ container, variables ]
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      identifier: xd-banking-api
+
+  sbom-evidence-capture:
+    name: Capture SBOM Evidence
+    runs-on: ubuntu-latest
+    needs: [ sbom ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    steps:
+      - name: setup fianu cli
         uses: fianulabs/actions@main
         with:
-          version: ${{ env.FIANU_VERSION }}
+          version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Download SBOM Results
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.sbom.outputs.sbom }}_xd-banking-api
 
       - name: Capture
+        env:
+          source: env-vars.yml
         run: |-
-          fianu session start
-#
-#  gobuild:
-#
-#    name: Go Build and Test
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: Set up Go
-#        uses: actions/setup-go@v2
-#        with:
-#          go-version: 1.17
-#
-#      - name: Build
-#        run: go build -v ./...
-#
-#      - name: Test
-#        run: go test -v ./...
-#
-#  dockerbuild:
-#
-#    name: Docker Build, Scan, & Publish
-#    runs-on: ubuntu-latest
-#    environment: production
-#
-#    permissions:
-#      id-token: write # Needed for keyless.
-#      contents: read
-#      # actions permissions are needed to read info on the workflow and
-#      # workflow run.
-#      actions: read
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#
-#      # Setup gcloud CLI
-#      - name: Setup gcloud CLI
-#        uses: google-github-actions/setup-gcloud@v0.2.0
-#        with:
-#          service_account_key: ${{ secrets.GKE_SA_KEY }}
-#          project_id: ${{ secrets.GKE_PROJECT }}
-#
-#      - name: setup fianu
-#        uses: fianulabs/actions@main
-#        with:
-#          version: ${{ env.FIANU_VERSION }}
-#
-#      # Configure Docker to use the gcloud command-line tool as a credential
-#      # helper for authentication
-#      - run: |-
-#          gcloud --quiet auth configure-docker
-#
-#      # Get the GKE credentials so we can deploy to the cluster
-#      - uses: google-github-actions/get-gke-credentials@v0.2.1
-#        with:
-#          cluster_name: ${{ env.GKE_CLUSTER }}
-#          location: ${{ env.GKE_ZONE }}
-#          credentials: ${{ secrets.GKE_SA_KEY }}
-#
-#      - uses: imjasonh/setup-ko@v0.6
-#        with:
-#          version: v0.12.0
-#
-#      - name: Auto Set Build Version
-#        run: |-
-#          export FIANU_BUILD_VERSION="$(fianu get version)"
-#          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
-#
-#      - name: Running Horusec Security
-#        run: |-
-#          touch result.json
-#
-#          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/main/deployments/scripts/install.sh | bash -s latest
-#
-#          horusec start -p="./" -o json -O sast.horusec.report.json
-#
-#          fianu capture artifact --input sast.horusec.report.json --type sast
-#
-#       # Build the Docker image
-#      - name: Build API
-#        run: |-
-#          docker tag $(ko build github.com/badgercorp/xd-banking-api/cmd/api --image-label version=$FIANU_BUILD_VERSION -t $FIANU_BUILD_VERSION --push=false --local) "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-#
-#      - uses: anchore/scan-action/download-grype@v3
-#        id: grype
-#        with:
-#          grype-version: v0.43.0
-#
-#      - run: |-
-#          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-#
-#          fianu capture artifact --input grype_scan.json --type containerscan
-#
-#      - name: Mock Capture Synopsys Blackduck
-#        run: |-
-#          fianu capture artifact --input synopsys_blackduck.json --type blackduck
-#
-#      - name: Mock Capture Lacework Inline Scan
-#        run: |-
-#          fianu capture artifact --input lacework_inlinescan.json --type lacework
-#
-#      - name: Mock Capture Checkmarx Inline Scan
-#        run: |-
-#          fianu capture artifact --input checkmarx_inlinescan.json --type checkmarx
-#
-#      - name: Install Cosign
-#        uses: sigstore/cosign-installer@main
-#        with:
-#          cosign-release: 'v1.11.0'
-#
-#      - name: Publish Artifact Image
-#        run: |-
-#          docker push gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-#
-#          cosign sign -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-#
-#          cosign generate -a version=$FIANU_BUILD_VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION"
-#
-#          fianu capture artifact --input cosign.json --type cosign
-#
-#      - name: Create and Publish Artifact SBOM
-#        uses: anchore/sbom-action@v0
-#        with:
-#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
-#          output-file: xd-banking-api/sbom.spdx.json
-#
-#      - run: |-
-#          fianu capture artifact --input sbom.spdx.json --type sbom
-#
-#      - run: |-
-#          fianu session close
+          fianu capture evidence --type sbom --source cli --input sbom.spdx.json
+
+  sast:
+    name: SAST
+    uses: fianulabs/tools/.github/workflows/sast.yaml@main
+    secrets: inherit
+    needs: [ container ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      project-type: golang
+      go-version: 1.18
+
+  sast-evidence-capture:
+    name: Capture SAST Evidence
+    runs-on: ubuntu-latest
+    needs: [ sast ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    steps:
+      - name: setup fianu cli
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Download SAST Results
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{needs.sast.outputs.snyk}}_golang
+
+      - name: Capture
+        env:
+          source: env-vars.yml
+        run: |-
+          fianu capture evidence --input snyk_sast.json --type snyk --source sast --resource-uri https://app.snyk.io
+
+  sca:
+    name: Software Composition Analysis
+    uses: fianulabs/tools/.github/workflows/sca.yaml@main
+    secrets: inherit
+    needs: [ container ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      project-type: golang
+      go-version: 1.18
+
+  sca-evidence-capture:
+    name: Capture Containerscan Evidence
+    runs-on: ubuntu-latest
+    needs: [ sca ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    steps:
+      - name: setup fianu cli
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Download SBOM Results
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{needs.sca.outputs.snyk}}_golang
+
+      - name: Capture
+        env:
+          source: env-vars.yml
+        run: |-
+          fianu capture evidence --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
+
+  containerscan:
+    name: Lacework
+    uses: fianulabs/tools/.github/workflows/containerscan.yaml@main
+    secrets: inherit
+    needs: [ container, variables ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      artifact-version: ${{ needs.variables.outputs.artifact-version }}
+      working-directory: ./xd-banking-api
+      artifact-name: ${{ needs.variables.outputs.artifact-name }}
+      identifier: xd-banking-api
+
+  containerscan-evidence-capture:
+    name: Capture Containerscan Evidence
+    runs-on: ubuntu-latest
+    needs: [ containerscan ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    steps:
+      - name: setup fianu cli
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Download SBOM Results
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{needs.containerscan.outputs.lacework}}_xd-banking-api
+
+      - name: Capture
+        env:
+          source: env-vars.yml
+        run: |-
+          fianu capture evidence --type lacework --source inlinescan --resource-uri https://${{ secrets.LW_ACCOUNT_NAME }}.lacework.io --input lacework.json
+
+  cosign:
+    name: Cosign
+    uses: fianulabs/tools/.github/workflows/cosign.yaml@main
+    secrets: inherit
+    needs: [ container, sbom, variables ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
+      oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oci-artifact-tag: ${{ needs.variables.outputs.artifact-version }}
+      identifier: xd-banking-api
+      
+      
+  sbom-from-source-as-blob:
+    name: SBOM From Source as Blob
+    uses: fianulabs/tools/.github/workflows/sbom_from_source_as_blob.yaml@main
+    needs: [ variables ]
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
+      oci-artifact-version: ${{ needs.variables.outputs.artifact-version }}
+
+  container-attestations:
+    name: Sbom Container Attestations
+    uses: fianulabs/tools/.github/workflows/container_attestations.yaml@main
+    secrets: inherit
+    needs: [ container, variables ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-api
+      oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+
+  cosign-evidence-capture:
+    name: Capture Signed Artifact Evidence
+    runs-on: ubuntu-latest
+    needs: [ cosign ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    env:
+      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
+      FIANU_HOST: ${{ secrets.FIANU_HOST }}
+      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    steps:
+      - name: setup fianu cli
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Download Cosign Results
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{needs.cosign.outputs.signature}}_xd-banking-api
+
+      - name: Capture
+        env:
+          source: env-vars.yml
+        run: |-
+          fianu capture evidence --input cosign.json --type cosign --source container
+          fianu capture evidence --input cosign.json --type cosign --source sbom
+
+  stage-release:
+    needs: [ container ]
+    name: Release
+    uses: fianulabs/tools/.github/workflows/release.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      tag: ${{ needs.container.outputs.digest }}
+      path: envs/rnd/values-image.yaml
+      deploy: fianulabs/investments-unlimited-deploy

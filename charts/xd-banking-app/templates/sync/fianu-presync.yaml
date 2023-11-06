@@ -1,0 +1,149 @@
+{{- if .Values.runtime }}
+{{- $release_id := uuidv4 -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: fianu-
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: intent
+          image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
+          imagePullPolicy: Always
+          args:
+            - capture
+            - artifact
+            - --status=initiated
+            - --result=inprogress
+          env:
+            - name: HELM_CHART_VERSION
+              value: {{ .Values.runtime.revision }}
+            - name: HELM_CHART
+              value: {{ .Values.runtime.chart }}
+            - name: FIANU_HOST
+              value: {{ .Values.fianu.host }}
+            - name: HELM_REPO_URL
+              value: {{ .Values.runtime.repo_url }}
+            - name: GIT_BRANCH
+              value: {{ .Values.runtime.branch }}
+            - name: GIT_REPO_DEPLOYMENT_TYPE
+              value: {{ .Values.runtime.repo_deployment_type }}
+            - name: FIANU_RELEASE_TARGET
+              value: {{ .Values.runtime.release_target }}
+            - name: FIANU_RELEASE_ENVIRONMENT
+              value: {{ .Values.runtime.release_environment }}
+            - name: FIANU_RELEASE_ID
+              value: {{ $release_id }}
+            # TODO: hook up to secrets
+            - name: FIANU_USERNAME
+              value: service-account-dxcm
+            - name: FIANU_CLIENT_ID
+              value: dxcm
+            - name: FIANU_CLIENT_SECRET
+              value: Eqsr2c8LvD2IqT6njZ6pTStdelbKqQ6L
+      restartPolicy: Never
+  backoffLimit: 0
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: fianu-
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: complete
+          image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
+          imagePullPolicy: Always
+          args:
+            - capture
+            - artifact
+            - --status=complete
+            - --result=pass
+          env:
+            - name: HELM_CHART_VERSION
+              value: {{ .Values.runtime.revision }}
+            - name: HELM_CHART
+              value: {{ .Values.runtime.chart }}
+            - name: FIANU_HOST
+              value: {{ .Values.fianu.host }}
+            - name: HELM_REPO_URL
+              value: {{ .Values.runtime.repo_url }}
+            - name: GIT_BRANCH
+              value: {{ .Values.runtime.branch }}
+            - name: GIT_REPO_DEPLOYMENT_TYPE
+              value: {{ .Values.runtime.repo_deployment_type }}
+            - name: FIANU_RELEASE_TARGET
+              value: {{ .Values.runtime.release_target }}
+            - name: FIANU_RELEASE_ENVIRONMENT
+              value: {{ .Values.runtime.release_environment }}
+            - name: FIANU_RELEASE_ID
+              value: {{ $release_id }}
+            # TODO: hook up to secrets
+            - name: FIANU_USERNAME
+              value: service-account-dxcm
+            - name: FIANU_CLIENT_ID
+              value: dxcm
+            - name: FIANU_CLIENT_SECRET
+              value: Eqsr2c8LvD2IqT6njZ6pTStdelbKqQ6L
+      restartPolicy: Never
+  backoffLimit: 0
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: fianu-
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: SyncFail
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: error
+          image: us-central1-docker.pkg.dev/fianu-368901/fianu-images/argocd-eeadf1237665da134cbbb5efd163812b:latest
+          imagePullPolicy: Always
+          args:
+            - capture
+            - artifact
+            - --status=complete
+            - --result=error
+          env:
+            - name: HELM_CHART_VERSION
+              value: {{ .Values.runtime.revision }}
+            - name: HELM_CHART
+              value: {{ .Values.runtime.chart }}
+            - name: FIANU_HOST
+              value: {{ .Values.fianu.host }}
+            - name: HELM_REPO_URL
+              value: {{ .Values.runtime.repo_url }}
+            - name: GIT_BRANCH
+              value: {{ .Values.runtime.branch }}
+            - name: GIT_REPO_DEPLOYMENT_TYPE
+              value: {{ .Values.runtime.repo_deployment_type }}
+            - name: FIANU_RELEASE_TARGET
+              value: {{ .Values.runtime.release_target }}
+            - name: FIANU_RELEASE_ENVIRONMENT
+              value: {{ .Values.runtime.release_environment }}
+            - name: FIANU_RELEASE_ID
+              value: {{ $release_id }}
+            # TODO: hook up to secrets
+            - name: FIANU_USERNAME
+              value: service-account-dxcm
+            - name: FIANU_CLIENT_ID
+              value: dxcm
+            - name: FIANU_CLIENT_SECRET
+              value: Eqsr2c8LvD2IqT6njZ6pTStdelbKqQ6L
+      restartPolicy: Never
+  backoffLimit: 0
+{{- end }}

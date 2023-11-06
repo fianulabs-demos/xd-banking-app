@@ -1,158 +1,179 @@
-#name: CI Pipeline Build UI
-#
-#on:
-#  push:
-#    branches: [ main ]
-#
-#env:
-#  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
-#  GKE_CLUSTER: fianu-prod  # TODO: update to cluster name
-#  GKE_ZONE: us-central1-c   # TODO: update to cluster zone
-#  DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
-#  FIANU_ARTIFACT: xd-banking-ui
-#  FIANU_VERSION: ${{ secrets.FIANU_VERSION }}
-#  FIANU_HOST: ${{ secrets.FIANU_HOST }}
-#  FIANU_KEY: ${{ secrets.FIANU_COSIGN_KEY }}
-#  REKOR_HOST: ${{ secrets.REKOR_URL }}
-#  GITHUB_CONTEXT: ${{ toJSON(github) }}
-#
-#defaults:
-#  run:
-#    working-directory: ./xd-banking-ui
-#
-#jobs:
-#  init:
-#    runs-on: ubuntu-18.04
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#
-#      - name: setup fianu
-#        uses: fianulabs/actions@main
-#        with:
-#          version: ${{ env.FIANU_VERSION }}
-#
-#      - name: Capture
-#        run: |-
-#          fianu session start
-#
-#  testing:
-#    runs-on: ubuntu-18.04
-#    name: Install, Test, Build, Scan & Publish
-#    strategy:
-#      matrix:
-#        node-version: [ 16.x ]
-#
-#    permissions:
-#      id-token: write # Needed for keyless.
-#      contents: read
-#      # actions permissions are needed to read info on the workflow and
-#      # workflow run.
-#      actions: read
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#
-#      - name: setup fianu
-#        uses: fianulabs/actions@main
-#        with:
-#          version: ${{ env.FIANU_VERSION }}
-#
-#      - name: Setup gcloud CLI
-#        uses: google-github-actions/setup-gcloud@v0.2.0
-#        with:
-#          service_account_key: ${{ secrets.GKE_SA_KEY }}
-#          project_id: ${{ secrets.GKE_PROJECT }}
-#
-#      # Configure Docker to use the gcloud command-line tool as a credential
-#      # helper for authentication
-#      - run: |-
-#          gcloud --quiet auth configure-docker
-#
-#      - uses: google-github-actions/get-gke-credentials@v0.2.1
-#        with:
-#          cluster_name: ${{ env.GKE_CLUSTER }}
-#          location: ${{ env.GKE_ZONE }}
-#          credentials: ${{ secrets.GKE_SA_KEY }}
-#
-#      - name: Auto Set Build Version
-#        run: |-
-#          export FIANU_BUILD_VERSION="$(fianu get version)"
-#          echo "FIANU_BUILD_VERSION=$FIANU_BUILD_VERSION" >> $GITHUB_ENV
-#
-#      - name: Use Node.js ${{ matrix.node-version }}
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: ${{ matrix.node-version }}
-#
-#      - run: npm install
-#
-#      - name: Cypress run
-#        uses: cypress-io/github-action@v4
-#        id: cypress
-#        continue-on-error: true
-#        timeout-minutes: 10
-#        with:
-#          working-directory: xd-banking-ui
-#          install: false
-#          record: true
-#          command: npm run test:e2e:ci
-#
-#      - run: |-
-#          fianu capture artifact --input cypress/results/mochawesome.json --type testing
-#
-#      - name: Build UI
-#        run: npm run build
-#
-#      - name: Build UI Image
-#        run: |-
-#          docker build . \
-#            --tag "gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION" \
-#            --build-arg GITHUB_SHA="$GITHUB_SHA" \
-#            --build-arg GITHUB_REF="$GITHUB_REF" \
-#
-#      - uses: anchore/scan-action/download-grype@v3
-#        id: grype
-#        with:
-#          grype-version: v0.43.0
-#
-#      - run: |-
-#          ${{steps.grype.outputs.cmd}} -o json --file grype_scan.json gcr.io/$PROJECT_ID/$FIANU_ARTIFACT:$FIANU_BUILD_VERSION
-#          fianu capture artifact --input grype_scan.json --type containerscan
-#
-#      - name: Install Cosign
-#        uses: sigstore/cosign-installer@main
-#        with:
-#          cosign-release: 'v1.10.1'
-#
-#      - name: Publish Artifact Image
-#        run: |-
-#          IMAGE=$FIANU_ARTIFACT
-#          VERSION=$FIANU_BUILD_VERSION
-#
-#          docker push "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#
-#          cosign sign -a version=$VERSION -a commit=$GITHUB_SHA --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#          cosign verify --key k8s://default/cosign "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#
-#          cosign generate -a version=$VERSION -a commit=$GITHUB_SHA --output-file=cosign.json "gcr.io/$PROJECT_ID/$IMAGE:$VERSION"
-#
-#          fianu capture artifact --input cosign.json --type cosign
-#
-#      - name: Create and Publish Artifact SBOM
-#        uses: anchore/sbom-action@v0
-#        with:
-#          image: gcr.io/${{ env.PROJECT_ID }}/${{ env.FIANU_ARTIFACT }}:${{ env.FIANU_BUILD_VERSION }}
-#          output-file: xd-banking-ui/sbom.spdx.json
-#
-#      - run: |-
-#          fianu capture artifact --input sbom.spdx.json --type sbom
-#
-#      - run: |-
-#          fianu session close
+name: CI Pipeline Build UI
+
+on:
+  push:
+    tags:
+      - '**'
+      - '*'
+    branches:
+      - main
+
+env:
+  FIANU_ARTIFACT_NAME: xd-banking-ui
+
+jobs:
+  setup:
+    name: Start Fianu Pipeline Session
+    uses: fianulabs/tools/.github/workflows/pipeline.yaml@main
+    secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      app-code: dbx
+      fianu-artifact: xd-banking-ui
+      base-commit: a294caa465f80ed93a8e5df7942081c9c30136d3
+
+  prepare:
+    name: Run Preparation
+    runs-on: ubuntu-latest
+    needs: [ setup ]
+    outputs:
+      artifact-name: ${{ steps.set-outputs.outputs.ARTIFACT_NAME }}
+      artifact-version: ${{ steps.set-outputs.outputs.ARTIFACT_VERSION }}
+    steps:
+      - name: Outputs
+        id: set-outputs
+        run: |-
+          echo "ARTIFACT_NAME=${{ env.FIANU_ARTIFACT_NAME }}" >> $GITHUB_OUTPUT
+          echo "ARTIFACT_VERSION=${{ needs.setup.outputs.version }}" >> $GITHUB_OUTPUT
+
+  container:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [ prepare ]
+    defaults:
+      run:
+        working-directory: ./xd-banking-ui
+
+    outputs:
+      digest: ${{ steps.digest.outputs.digest }}
+
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+
+    strategy:
+      matrix:
+        node-version: [ 16.x ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: setup fianu
+        uses: fianulabs/actions@main
+        with:
+          version: ${{ secrets.FIANU_VERSION }}
+
+      # Setup gcloud CLI
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          service_account_key: ${{ secrets.GKE_HELM_SA_KEY }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+
+      # Configure Docker to use the gcloud command-line tool as a credential
+      # helper for authentication
+      - run: |-
+          gcloud --quiet auth configure-docker us-central1-docker.pkg.dev
+
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - run: npm install
+
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        id: cypress
+        continue-on-error: true
+        timeout-minutes: 10
+        with:
+          working-directory: xd-banking-ui
+          install: false
+          record: true
+          command: npm run test:e2e:ci
+
+      - env:
+          FIANU_ARTIFACT: ${{ needs.prepare.outputs.artifact-name }}
+          FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
+          FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
+          FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
+          FIANU_HOST: ${{ secrets.FIANU_HOST }}
+        run: |-
+          fianu capture evidence --input cypress/results/mochawesome.json --type testing --source mocha
+
+      - name: Build and Publish
+        id: digest
+        run: |-
+          npm run build
+
+          docker build . -t "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}" -t "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:latest"
+          docker push "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+          docker push "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:latest"
+
+          IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${{ secrets.DOCKER_IMAGE_LOCATION }}/${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}" | cut -d@ -f2)
+          echo "digest=$IMAGE_DIGEST" >> $GITHUB_OUTPUT
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@v0.2.1
+        with:
+          cluster_name: ${{ secrets.GKE_CLUSTER }}
+          location: us-central1-c
+          credentials: ${{ secrets.GKE_HELM_SA_KEY }}
+
+  security:
+    name: Fianu Security
+    uses: fianulabs/tools/.github/workflows/security.yaml@main
+    secrets: inherit
+    needs: [ prepare, container ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-ui
+      project-type: node
+      fianu-artifact: ${{ needs.prepare.outputs.artifact-name }}
+      artifact-name: ${{ needs.prepare.outputs.artifact-name }}
+      artifact-version: ${{ needs.prepare.outputs.artifact-version }}
+
+  fianu-container-metadata:
+    name: Fianu Container Metadata Job
+    uses: fianulabs/tools/.github/workflows/container_metadata.yaml@main
+    secrets: inherit
+    needs: [ prepare, container ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-ui
+      oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+
+  fianu-signed-artifact:
+    name: Fianu Signed Artifact
+    uses: fianulabs/tools/.github/workflows/artifact_signing.yaml@main
+    secrets: inherit
+    needs: [ prepare, container, fianu-container-metadata ]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
+      actions: write
+    with:
+      working-directory: ./xd-banking-ui
+      oci-artifact: "${{ needs.prepare.outputs.artifact-name }}:${{ needs.prepare.outputs.artifact-version }}"
+      oci-artifact-name: ${{ needs.prepare.outputs.artifact-name }}
+      oci-artifact-digest: ${{ needs.container.outputs.digest }}
+      oci-artifact-tag: ${{ needs.prepare.outputs.artifact-version }}
+      oidc-audience: 'sigstore'

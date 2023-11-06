@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CxXMLResults InitiatorName="svcRnDCybersecurity ServiceAccount" Owner="svcRnDCybersecurity" ScanId="1035418" ProjectId="258" ProjectName="banking-udp-banking-key-service" TeamFullPathOnReportDate="CxServer\banking\RND\UDP" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258" ScanStart="Friday, January 6, 2023 4:30:33 PM" Preset="Checkmarx Default" ScanTime="00h:02m:22s" LinesOfCodeScanned="28757" FilesScanned="73" ReportCreationTime="Friday, January 6, 2023 4:33:10 PM" Team="UDP" CheckmarxVersion="9.0.0.40085 HF8" ScanComments="Scan for banking-udp-banking-key-service branch:pcd-1754-fianu-poc, buildNumber:51, SHA:32dbcccf519763e89e97cf0f3d1a735aa0f0b7c9" ScanType="Full" SourceOrigin="LocalPath" Visibility="Public">
+    <Query id="5876" cweId="260" name="Use_Of_Hardcoded_Password_In_Config" group="Java_Low_Visibility" Severity="Low" Language="Java" LanguageHash="1621858418163027" LanguageChangeDate="2020-06-30T00:00:00.0000000" SeverityIndex="1" QueryPath="Java\Cx\Java Low Visibility\Use Of Hardcoded Password In Config Version:1" QueryVersionCode="126057504">
+        <Result NodeId="10354180002" FileName="banking-key-service/build/resources/main/application.properties" Status="Recurrent" Line="27" Column="21" FalsePositive="False" Severity="Low" AssignToUser="" state="0" Remark="" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258&amp;pathid=2" SeverityIndex="1">
+            <Path ResultId="1035418" PathId="2" SimilarityId="-1622441728">
+                <PathNode>
+                    <FileName>banking-key-service/build/resources/main/application.properties</FileName>
+                    <Line>27</Line>
+                    <Column>21</Column>
+                    <NodeId>1</NodeId>
+                    <Name>password</Name>
+                    <Type></Type>
+                    <Length>8</Length>
+                    <Snippet>
+                        <Line>
+                            <Number>27</Number>
+                            <Code>certificate.partner.password=${PARTNER_PASSWORD}</Code>
+                        </Line>
+                    </Snippet>
+                </PathNode>
+            </Path>
+        </Result>
+        <Result NodeId="10354180003" FileName="banking-key-service/src/main/resources/application.properties" Status="Recurrent" Line="27" Column="21" FalsePositive="False" Severity="Low" AssignToUser="" state="0" Remark="" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258&amp;pathid=3" SeverityIndex="1">
+            <Path ResultId="1035418" PathId="3" SimilarityId="-1622441728">
+                <PathNode>
+                    <FileName>banking-key-service/src/main/resources/application.properties</FileName>
+                    <Line>27</Line>
+                    <Column>21</Column>
+                    <NodeId>1</NodeId>
+                    <Name>password</Name>
+                    <Type></Type>
+                    <Length>8</Length>
+                    <Snippet>
+                        <Line>
+                            <Number>27</Number>
+                            <Code>certificate.partner.password=${PARTNER_PASSWORD}</Code>
+                        </Line>
+                    </Snippet>
+                </PathNode>
+            </Path>
+        </Result>
+        <Result NodeId="10354180004" FileName="banking-key-service/src/test/resources/application-int-test.properties" Status="Recurrent" Line="11" Column="21" FalsePositive="False" Severity="Low" AssignToUser="" state="0" Remark="" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258&amp;pathid=4" SeverityIndex="1">
+            <Path ResultId="1035418" PathId="4" SimilarityId="662137762">
+                <PathNode>
+                    <FileName>banking-key-service/src/test/resources/application-int-test.properties</FileName>
+                    <Line>11</Line>
+                    <Column>21</Column>
+                    <NodeId>1</NodeId>
+                    <Name>password</Name>
+                    <Type></Type>
+                    <Length>8</Length>
+                    <Snippet>
+                        <Line>
+                            <Number>11</Number>
+                            <Code>certificate.partner.password=${PARTNER_PASSWORD:1}</Code>
+                        </Line>
+                    </Snippet>
+                </PathNode>
+            </Path>
+        </Result>
+    </Query>
+    <Query id="5687" cweId="693" name="Missing_Rooted_Device_Check" group="Kotlin_Android" Severity="Low" Language="Kotlin" LanguageHash="0138594286963379" LanguageChangeDate="2020-05-15T00:00:00.0000000" SeverityIndex="1" QueryPath="Kotlin\Cx\Kotlin Android\Missing Rooted Device Check Version:1" QueryVersionCode="123074517">
+        <Result NodeId="10354180001" FileName="banking-key-service/src/main/kotlin/com/banking/banking/key/application.kt" Status="Recurrent" Line="19" Column="13" FalsePositive="False" Severity="Low" AssignToUser="" state="0" Remark="" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258&amp;pathid=1" SeverityIndex="1">
+            <Path ResultId="1035418" PathId="1" SimilarityId="-470910384">
+                <PathNode>
+                    <FileName>banking-key-service/src/main/kotlin/com/banking/banking/key/application.kt</FileName>
+                    <Line>19</Line>
+                    <Column>13</Column>
+                    <NodeId>1</NodeId>
+                    <Name>main</Name>
+                    <Type></Type>
+                    <Length>4</Length>
+                    <Snippet>
+                        <Line>
+                            <Number>19</Number>
+                            <Code>        fun main(args: Array&lt;String&gt;) {</Code>
+                        </Line>
+                    </Snippet>
+                </PathNode>
+            </Path>
+        </Result>
+    </Query>
+    <Query id="5719" cweId="326" name="Insecure_Cipher_Mode" group="Kotlin_Android" Severity="Information" Language="Kotlin" LanguageHash="0138594286963379" LanguageChangeDate="2020-05-15T00:00:00.0000000" SeverityIndex="0" QueryPath="Kotlin\Cx\Kotlin Android\Insecure Cipher Mode Version:1" QueryVersionCode="123577061">
+        <Result NodeId="10354180005" FileName="banking-key-service/src/main/kotlin/com/banking/banking/key/util/cryptoutilityimpl.kt" Status="Recurrent" Line="119" Column="41" FalsePositive="False" Severity="Information" AssignToUser="" state="0" Remark="" DeepLink="https://checkmarx.banking.com/CxWebClient/ViewerMain.aspx?scanid=1035418&amp;projectid=258&amp;pathid=5" SeverityIndex="0">
+            <Path ResultId="1035418" PathId="5" SimilarityId="-456082902">
+                <PathNode>
+                    <FileName>banking-key-service/src/main/kotlin/com/banking/banking/key/util/cryptoutilityimpl.kt</FileName>
+                    <Line>119</Line>
+                    <Column>41</Column>
+                    <NodeId>1</NodeId>
+                    <Name>"AES/CBC/PKCS5Padding"</Name>
+                    <Type></Type>
+                    <Length>20</Length>
+                    <Snippet>
+                        <Line>
+                            <Number>119</Number>
+                            <Code>        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")</Code>
+                        </Line>
+                    </Snippet>
+                </PathNode>
+            </Path>
+        </Result>
+    </Query>
+</CxXMLResults>

@@ -1,0 +1,50 @@
+[
+  {
+    "componentName": "SnakeYAML",
+    "versionName": "1.30",
+    "componentIdentifier": "maven:org.yaml:snakeyaml:1.30",
+    "violatingPolicyNames": [
+      "Nile API Gateway Vulnerability Scan"
+    ],
+    "policyViolationVulnerabilities": [
+      {
+        "name": "CVE-2022-1471",
+        "description": "SnakeYaml's Constructor() class does not restrict types which can be instantiated during deserialization. Deserializing yaml content provided by an attacker can lead to remote code execution. We recommend using SnakeYaml's SafeConsturctor when parsing untrusted content to restrict deserialization.",
+        "violatingPolicyNames": [
+          "Nile API Gateway Vulnerability Scan"
+        ],
+        "errorMessage": "Component SnakeYAML version 1.30 with ID maven:org.yaml:snakeyaml:1.30 violates policy Nile API Gateway Vulnerability Scan: found vulnerability CVE-2022-1471 with severity CRITICAL and CVSS score 9.8",
+        "_meta": {
+          "allow": [
+            "GET"
+          ],
+          "href": "https://app.blackduck.com/api/vulnerabilities/CVE-2022-1471",
+          "links": []
+        }
+      },
+      {
+        "name": "CVE-2022-25857",
+        "description": "The package org.yaml:snakeyaml from 0 and before 1.31 are vulnerable to Denial of Service (DoS) due missing to nested depth limitation for collections.",
+        "violatingPolicyNames": [
+          "Nile API Gateway Vulnerability Scan"
+        ],
+        "errorMessage": "Component SnakeYAML version 1.30 with ID maven:org.yaml:snakeyaml:1.30 violates policy Nile API Gateway Vulnerability Scan: found vulnerability CVE-2022-25857 with severity HIGH and CVSS score 7.5",
+        "_meta": {
+          "allow": [
+            "GET"
+          ],
+          "href": "https://app.blackduck.com/api/vulnerabilities/CVE-2022-25857",
+          "links": []
+        }
+      }
+    ],
+    "policyViolationLicenses": [],
+    "_meta": {
+      "allow": [
+        "GET"
+      ],
+      "href": "https://app.blackduck.com/api/developer-scans/5f0a60e3-5f7e-4acc-8842-4037a98f07ab",
+      "links": []
+    }
+  }
+]
