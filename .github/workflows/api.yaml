@@ -180,39 +180,6 @@ jobs:
       project-type: golang
       go-version: 1.18
 
-  sca-evidence-capture:
-    name: Capture Containerscan Evidence
-    runs-on: ubuntu-latest
-    needs: [ sca ]
-    permissions:
-      id-token: write
-      contents: write
-      packages: write
-      actions: write
-    env:
-      FIANU_ARTIFACT: ${{ inputs.oci-artifact }}
-      FIANU_HOST: ${{ secrets.FIANU_HOST }}
-      FIANU_USERNAME: ${{ secrets.FIANU_USERNAME }}
-      FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
-      FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
-      FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
-    steps:
-      - name: setup fianu cli
-        uses: fianulabs/actions@main
-        with:
-          version: ${{ secrets.FIANU_VERSION }}
-
-      - name: Download SBOM Results
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{needs.sca.outputs.snyk}}_golang
-
-      - name: Capture
-        env:
-          source: env-vars.yml
-        run: |-
-          fianu capture evidence --input snyk_sca.json --type snyk --source ossdepscan --resource-uri https://app.snyk.io
-
   containerscan:
     name: Lacework
     uses: fianulabs/tools/.github/workflows/containerscan.yaml@main
