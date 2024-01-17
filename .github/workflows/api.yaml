@@ -23,6 +23,7 @@ jobs:
       app-code: dbx
       fianu-artifact: xd-banking-api
       base-commit: a294caa465f80ed93a8e5df7942081c9c30136d3
+      base-image: docker.io/golang:1.19
 
   variables:
     name: Set Runtime Variables
