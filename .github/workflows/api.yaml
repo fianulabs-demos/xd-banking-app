@@ -26,6 +26,8 @@ jobs:
       FIANU_CLIENT_ID: ${{ secrets.FIANU_CLIENT_ID }}
       FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
       FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
+    outputs:
+      version: ${{ steps.auto-version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -36,6 +38,13 @@ jobs:
         uses: fianulabs/actions@main
         with:
           version: ${{ secrets.FIANU_VERSION }}
+
+      - name: Auto Set Build Version
+        id: auto-version
+        run: |-
+          export FIANU_ARTIFACT_VERSION="$(fianu get version)"
+          echo "FIANU_ARTIFACT_VERSION=$FIANU_ARTIFACT_VERSION" >> $GITHUB_ENV
+          echo "version=$FIANU_ARTIFACT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Set Base Commit
         env:
