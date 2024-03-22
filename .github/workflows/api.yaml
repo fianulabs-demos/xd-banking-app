@@ -27,6 +27,11 @@ jobs:
       FIANU_CLIENT_SECRET: ${{ secrets.FIANU_CLIENT_SECRET }}
       FIANU_ASSET_TOKEN: ${{ secrets[format('{0}', inputs.token)] }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: setup fianu cli
         uses: fianulabs/actions@main
         with:
