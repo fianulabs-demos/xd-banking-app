@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Network Connection: Serving API Routes",
+    "description": "Service exposes RESTful API Routes",
+    "id": "bd65d5b4-5ec3-4e24-b13b-871c80cec0d6",
+    "severity": "moderate",
+    "applies_to": [
+      "go"
+    ],
+    "tags": [
+      "Fianu.OS.Network.Connection.Routes.API.Path"
+    ],
+    "patterns": [
+      {
+        "pattern": "(?<=(?:Post|Get|Put|Delete|Connect|Patch|Options|Head|Trace)\\(\")([^\"]*\\/[^\"]+)(?=\")",
+        "type": "regex",
+        "modifiers": [
+          "i"
+        ],
+        "confidence": "high"
+      }
+    ]
+  }
+]
