@@ -83,6 +83,7 @@ jobs:
       actions: write
     with:
       project-type: 'golang'
+      identifier: 'xd-banking-api'
       build-version: ${{ needs.variables.outputs.artifact-version }}
       working-directory: ./xd-banking-api
       artifact-name: ${{ needs.variables.outputs.artifact-name }}
