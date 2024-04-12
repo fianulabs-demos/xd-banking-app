@@ -4,6 +4,8 @@ import (
 	"context"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
+	"math/rand"
+	"time"
 )
 
 func receive(ctx context.Context, event cloudevents.Event) {
@@ -112,21 +114,19 @@ func test() {
 	log.Println("test")
 	log.Println("test")
 	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
-	log.Println("test")
 }
 
 func noah() {
 	log.Println("test")
+}
+
+func generateToken() string {
+	rand.Seed(time.Now().UnixNano())
+	token := ""
+	for i := 0; i < 10; i++ {
+		token += string(rand.Intn(26) + 'a')
+	}
+	return token
 }
 
 func main() {
@@ -147,6 +147,8 @@ func main() {
 
 	log.Printf("listening on :8080\n")
 	log.Println("test")
+	token := generateToken()
+	log.Printf("yoour secret is: %s\n", token)
 	test()
 	noah()
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, receive))
