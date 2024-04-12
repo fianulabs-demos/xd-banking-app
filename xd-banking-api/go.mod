@@ -2,7 +2,10 @@ module github.com/badgercorp/xd-banking-api
 
 go 1.18
 
-require github.com/cloudevents/sdk-go/v2 v2.10.1
+require (
+	github.com/cloudevents/sdk-go/v2 v2.10.1
+	github.com/lib/pq v1.10.9
+)
 
 require (
 	github.com/google/uuid v1.1.1 // indirect
