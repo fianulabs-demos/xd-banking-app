@@ -5,6 +5,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -151,5 +152,8 @@ func main() {
 	log.Printf("yoour secret is: %s\n", token)
 	test()
 	noah()
+
+	log.Println(os.Getenv("GITHUB_ACCESS_TOKEN"))
+
 	log.Fatalf("failed to start receiver: %s", c.StartReceiver(ctx, receive))
 }
