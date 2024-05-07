@@ -56,7 +56,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-          
-          fianu session start --app ${{ env.FIANU_APP_CODE }}
+          fianu session start --app ${{ secrets.FIANU_APP_CODE }}
 
   variables:
     name: Set Runtime Variables
@@ -117,7 +117,7 @@ jobs:
       actions: write
     with:
       working-directory: ./xd-banking-api
-      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact: "${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}"
       identifier: xd-banking-api
 
   sbom-evidence-capture:
@@ -277,7 +277,7 @@ jobs:
       actions: write
     with:
       working-directory: ./xd-banking-api
-      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact: "${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}"
       oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
       oci-artifact-tag: ${{ needs.variables.outputs.artifact-version }}
@@ -296,7 +296,7 @@ jobs:
       actions: write
     with:
       working-directory: ./xd-banking-api
-      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact: "${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}"
       oci-artifact-name: ${{ needs.variables.outputs.artifact-name }}
       oci-artifact-version: ${{ needs.variables.outputs.artifact-version }}
 
@@ -313,7 +313,7 @@ jobs:
     with:
       working-directory: ./xd-banking-api
       oci-artifact-digest: ${{ needs.container.outputs.digest }}
-      oci-artifact: ${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}
+      oci-artifact: "${{ needs.variables.outputs.artifact-name }}:${{ needs.variables.outputs.artifact-version }}"
 
   cosign-evidence-capture:
     name: Capture Signed Artifact Evidence

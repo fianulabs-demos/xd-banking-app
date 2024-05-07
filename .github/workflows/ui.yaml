@@ -56,7 +56,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-
-          fianu session start --app ${{ env.FIANU_APP_CODE }}
+          fianu session start --app ${{ secrets.FIANU_APP_CODE }}
 
   prepare:
     name: Run Preparation
