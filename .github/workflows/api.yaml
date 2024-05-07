@@ -56,7 +56,7 @@ jobs:
         env:
           source: env-vars.yml
         run: |-          
-          fianu session start --app DBX
+          fianu session start --app ${{ env.FIANU_APP_CODE }}
 
   variables:
     name: Set Runtime Variables
