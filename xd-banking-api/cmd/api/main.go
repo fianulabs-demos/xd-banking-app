@@ -235,6 +235,7 @@ func main() {
 	test()
 	noah()
 	connect()
+	test()
 
 	log.Println(os.Getenv("GITHUB_ACCESS_TOKEN"))
 
