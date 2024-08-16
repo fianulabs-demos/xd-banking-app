@@ -13,12 +13,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	user      = "dbuser"
-	password  = "s3cretp4ssword"
-	username  = "dbuser"
-	password2 = "password2"
-)
+const ()
 
 func connect() *sql.DB {
 	connStr := fmt.Sprintf("postgres://%s:%s@localhost/pqgotest", user, password)
