@@ -14,8 +14,10 @@ import (
 )
 
 const (
-	user     = "dbuser"
-	password = "s3cretp4ssword"
+	user      = "dbuser"
+	password  = "s3cretp4ssword"
+	username  = "dbuser"
+	password2 = "password2"
 )
 
 func connect() *sql.DB {
