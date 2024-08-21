@@ -28,3 +28,39 @@ export default route(function (/* { store, ssrContext } */) {
 
   return Router
 })
+
+
+const express = require('express');
+const app = express();
+const mysql = require('mysql');
+
+// Set up the MySQL connection
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: 'my_database'
+});
+
+// Connect to the database
+connection.connect();
+
+// A route that takes a user ID as a parameter and returns user details
+app.get('/user/:id', (req, res) => {
+  // Vulnerable code: Directly concatenating user input into the SQL query
+  const userId = req.params.id;
+  const query = `SELECT * FROM users WHERE id = '${userId}'`;
+
+  connection.query(query, (error, results) => {
+    if (error) {
+      res.status(500).send('Server error');
+      return;
+    }
+    res.send(results);
+  });
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
