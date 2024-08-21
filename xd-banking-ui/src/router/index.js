@@ -38,9 +38,9 @@ const mysql = require('mysql');
 // Set up the MySQL connection
 const connection = mysql.createConnection({
     host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'my_database'
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE
 });
 
 // Connect to the database
